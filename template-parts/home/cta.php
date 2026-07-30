@@ -11,6 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<div class="nx-cta">
 		<h2>Ready to explore?</h2>
 		<p>Message us on WhatsApp and we'll tailor the perfect program for your dates.</p>
-		<button type="button" class="nx-btn nx-btn--dark" data-open-booking>Book an excursion →</button>
+		<?php nefertari_book_button( 'Book an excursion →', 'nx-btn nx-btn--dark' ); ?>
 	</div>
 </section>

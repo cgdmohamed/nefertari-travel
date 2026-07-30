@@ -46,7 +46,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<a href="<?php echo esc_url( home_url( '/#reviews' ) ); ?>">Reviews</a>
 				<a href="<?php echo esc_url( get_permalink( get_option( 'page_for_posts' ) ) ?: home_url( '/blog/' ) ); ?>">Blog</a>
 				<a href="<?php echo esc_url( home_url( '/#contact' ) ); ?>">Contact</a>
+				<?php if ( is_user_logged_in() ) : ?>
+					<a href="<?php echo esc_url( nefertari_account_url( 'account' ) ); ?>">My Account</a>
+				<?php else : ?>
+					<a href="<?php echo esc_url( nefertari_account_url( 'login' ) ); ?>">Log in</a>
+				<?php endif; ?>
 			</nav>
-			<button type="button" class="nx-btn nx-btn--primary nx-btn--sm" data-open-booking>Book now</button>
+			<?php nefertari_book_button( 'Book now', 'nx-btn nx-btn--primary nx-btn--sm' ); ?>
 		</div>
 	</header>

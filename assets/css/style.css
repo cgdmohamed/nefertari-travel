@@ -412,6 +412,48 @@ button{ font-family:inherit; }
 .nx-detail-reviews-sub{ display:flex; align-items:center; gap:8px; color:var(--nx-ink-soft); font-size:14.5px; margin-bottom:24px; }
 
 /* =========================================================================
+   Auth & account pages (login, register, account, payment result)
+   ========================================================================= */
+.nx-panel{ background:#fff; border-radius:22px; box-shadow:0 10px 30px rgba(43,26,31,0.07); padding:32px; }
+.nx-auth-page{ max-width:440px; margin:0 auto; padding:64px 6vw 90px; }
+.nx-auth-page h1{ font-family:var(--nx-font-display); font-weight:800; font-size:clamp(28px,3.4vw,36px); letter-spacing:-0.8px; margin:0 0 8px; text-align:center; }
+.nx-auth-page p.nx-lede{ text-align:center; margin:0 0 28px; }
+.nx-auth-switch{ text-align:center; margin-top:18px; font-size:14px; color:var(--nx-ink-soft); }
+.nx-auth-switch a{ color:var(--nx-pink); font-weight:700; text-decoration:none; }
+.nx-form-error{ background:var(--nx-red-bg, #FBEAE7); color:#B0413A; border-radius:12px; padding:12px 16px; font-size:14px; font-weight:600; margin-bottom:18px; }
+.nx-form-success{ background:var(--nx-green-bg); color:var(--nx-green); border-radius:12px; padding:12px 16px; font-size:14px; font-weight:600; margin-bottom:18px; }
+
+.nx-account-page{ max-width:840px; margin:0 auto; padding:50px 6vw 90px; }
+.nx-account-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:14px; }
+.nx-account-head h1{ font-family:var(--nx-font-display); font-weight:800; font-size:clamp(26px,3vw,34px); letter-spacing:-0.6px; margin:0; }
+.nx-account-grid{ display:grid; grid-template-columns:1fr 1.4fr; gap:24px; align-items:start; }
+.nx-panel h2{ font-family:var(--nx-font-display); font-weight:700; font-size:18px; margin:0 0 18px; }
+
+.nx-bookings-table{ width:100%; border-collapse:collapse; font-size:14px; }
+.nx-bookings-table th{ text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:0.4px; color:var(--nx-brown); padding:0 0 10px; border-bottom:1px solid var(--nx-border); }
+.nx-bookings-table td{ padding:12px 0; border-bottom:1px solid var(--nx-border); vertical-align:top; }
+.nx-bookings-table tr:last-child td{ border-bottom:none; }
+.nx-bookings-empty{ color:var(--nx-ink-soft); font-size:14px; }
+
+.nx-status-pill{ display:inline-flex; padding:4px 11px; border-radius:999px; font-size:11.5px; font-weight:700; }
+.nx-status-pill--success{ background:var(--nx-green-bg); color:var(--nx-green); }
+.nx-status-pill--warning{ background:var(--nx-cream-2); color:#9A4A2E; }
+.nx-status-pill--danger{ background:var(--nx-red-bg, #FBEAE7); color:#B0413A; }
+.nx-status-pill--neutral{ background:var(--nx-border); color:var(--nx-ink-soft); }
+
+.nx-result-page{ max-width:520px; margin:0 auto; padding:80px 6vw; text-align:center; }
+.nx-result-icon{ width:78px; height:78px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:38px; margin:0 auto 20px; color:#fff; }
+.nx-result-icon--success{ background:linear-gradient(135deg,#26B36B,#1F8A5B); box-shadow:0 12px 26px rgba(31,138,91,0.32); }
+.nx-result-icon--pending{ background:var(--nx-gradient-brand); }
+.nx-result-icon--failed{ background:linear-gradient(135deg,#C2655E,#B0413A); }
+.nx-result-page h1{ font-family:var(--nx-font-display); font-weight:800; font-size:26px; margin:0 0 10px; }
+.nx-result-page p{ color:var(--nx-ink-soft); font-size:15px; line-height:1.6; margin:0 0 24px; }
+
+@media (max-width:700px){
+  .nx-account-grid{ grid-template-columns:1fr; }
+}
+
+/* =========================================================================
    Booking modal
    ========================================================================= */
 .nx-modal{ position:fixed; inset:0; z-index:120; display:none; align-items:center; justify-content:center; padding:24px; }

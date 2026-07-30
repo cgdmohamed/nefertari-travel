@@ -1,125 +1,153 @@
 /**
- * Booking modal: details -> demo card payment -> processing -> success.
- * Front-end only — no real charge is ever made (any card number "works"),
- * matching the original design's explicit demo scope.
+ * Booking modal: real flow against the Nefertari Booking Core plugin's
+ * REST API — real departure slots, real passenger/passport capture, a real
+ * live price, and a redirect to Kashier's actual checkout. Booking requires
+ * a WordPress account; logged-out visitors see a login/register prompt.
  */
 ( function () {
 	'use strict';
 
-	var cfg = window.nefertariBooking || { whatsapp: '', siteName: 'Nefertari Travel' };
-
+	var cfg = window.nefertariBooking;
 	var modal = document.getElementById( 'nx-booking-modal' );
-	if ( ! modal ) {
+	if ( ! cfg || ! modal ) {
 		return;
 	}
 
 	var els = {
 		tripSelect: document.getElementById( 'nx-trip-select' ),
-		date: document.getElementById( 'nx-trip-date' ),
-		name: document.getElementById( 'nx-trip-name' ),
+		slotSelect: document.getElementById( 'nx-slot-select' ),
 		adultsValue: document.getElementById( 'nx-adults-value' ),
 		childrenValue: document.getElementById( 'nx-children-value' ),
+		passengerForms: document.getElementById( 'nx-passenger-forms' ),
+		contactName: document.getElementById( 'nx-contact-name' ),
+		contactPhone: document.getElementById( 'nx-contact-phone' ),
+		contactCountry: document.getElementById( 'nx-contact-country' ),
+		contactHotel: document.getElementById( 'nx-contact-hotel' ),
+		contactRoom: document.getElementById( 'nx-contact-room' ),
+		contactPickup: document.getElementById( 'nx-contact-pickup' ),
+		contactNotes: document.getElementById( 'nx-contact-notes' ),
+		terms: document.getElementById( 'nx-terms' ),
 		totalBreakdown: document.getElementById( 'nx-total-breakdown' ),
 		totalValue: document.getElementById( 'nx-total-value' ),
-		goPay: document.getElementById( 'nx-go-pay' ),
-		payCtaTotal: document.getElementById( 'nx-pay-cta-total' ),
-		waRequest: document.getElementById( 'nx-wa-request' ),
-		payTripName: document.getElementById( 'nx-pay-trip-name' ),
-		payDate: document.getElementById( 'nx-pay-date' ),
-		payGuests: document.getElementById( 'nx-pay-guests' ),
-		payTotalBig: document.getElementById( 'nx-pay-total-big' ),
-		cardNumber: document.getElementById( 'nx-card-number' ),
-		cardName: document.getElementById( 'nx-card-name' ),
-		cardExp: document.getElementById( 'nx-card-exp' ),
-		cardCvc: document.getElementById( 'nx-card-cvc' ),
 		payBtn: document.getElementById( 'nx-pay-btn' ),
-		payBtnTotal: document.getElementById( 'nx-pay-btn-total' ),
-		successName: document.getElementById( 'nx-success-name' ),
-		successTrip: document.getElementById( 'nx-success-trip' ),
-		successTrip2: document.getElementById( 'nx-success-trip-2' ),
-		successDate: document.getElementById( 'nx-success-date' ),
-		successGuests: document.getElementById( 'nx-success-guests' ),
-		successTotal: document.getElementById( 'nx-success-total' ),
-		successRef: document.getElementById( 'nx-success-ref' ),
-		doneBtn: document.getElementById( 'nx-done-btn' ),
+		payCtaTotal: document.getElementById( 'nx-pay-cta-total' ),
+		formMessage: document.getElementById( 'nx-form-message' ),
+		gateLogin: document.getElementById( 'nx-gate-login' ),
+		gateRegister: document.getElementById( 'nx-gate-register' ),
 	};
 
-	var state = { adults: 2, children: 0 };
+	var state = { adults: 2, children: 0, lastPrice: null };
 
-	function waLink( text ) {
-		return 'https://wa.me/' + cfg.whatsapp + '?text=' + encodeURIComponent( text );
+	/* API helper --------------------------------------------------------------*/
+
+	function api( path, method, body ) {
+		return fetch( cfg.restUrl + path, {
+			method: method,
+			headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': cfg.nonce },
+			body: body ? JSON.stringify( body ) : undefined,
+		} ).then( function ( res ) {
+			return res.json().then( function ( json ) {
+				if ( ! res.ok ) {
+					throw new Error( json.message || 'Something went wrong. Please try again.' );
+				}
+				return json;
+			} );
+		} );
 	}
 
-	function selectedOption() {
-		return els.tripSelect.options[ els.tripSelect.selectedIndex ] || null;
+	/* Steps ---------------------------------------------------------------------*/
+
+	function showStep( step ) {
+		modal.querySelectorAll( '[data-step-view]' ).forEach( function ( view ) {
+			view.classList.toggle( 'is-active', view.getAttribute( 'data-step-view' ) === step );
+		} );
 	}
 
-	function tripPrice() {
-		var opt = selectedOption();
-		return opt && opt.value ? parseInt( opt.getAttribute( 'data-price' ), 10 ) || 0 : 0;
+	/* Passenger forms -----------------------------------------------------------*/
+
+	function passengerGroup( type, index ) {
+		var label = ( 'adult' === type ? 'Adult ' : 'Child ' ) + ( index + 1 );
+		var wrap = document.createElement( 'div' );
+		wrap.className = 'nx-passenger-group';
+		wrap.setAttribute( 'data-passenger-type', type );
+		wrap.style.cssText = 'border:1px solid var(--nx-border-2);border-radius:14px;padding:16px;margin-bottom:12px';
+		wrap.innerHTML =
+			'<div style="font-weight:700;margin-bottom:10px">' + label + '</div>' +
+			'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
+			'<input class="nx-input" style="margin-bottom:0" data-field="first_name" placeholder="First name">' +
+			'<input class="nx-input" style="margin-bottom:0" data-field="last_name" placeholder="Last name">' +
+			'<input class="nx-input" style="margin-bottom:0" data-field="nationality" placeholder="Nationality">' +
+			'<input class="nx-input" style="margin-bottom:0" data-field="date_of_birth" type="date" placeholder="Date of birth">' +
+			'<input class="nx-input" style="margin-bottom:0" data-field="passport_number" placeholder="Passport number">' +
+			'<input class="nx-input" style="margin-bottom:0" data-field="passport_expiry" type="date" placeholder="Passport expiry">' +
+			'</div>' +
+			'<select class="nx-input" style="margin-bottom:0" data-field="gender"><option value="">Gender</option><option value="female">Female</option><option value="male">Male</option><option value="prefer_not_to_say">Prefer not to say</option></select>';
+		return wrap;
 	}
 
-	function tripName() {
-		var opt = selectedOption();
-		if ( ! opt || ! opt.value ) {
-			return '';
+	function renderPassengerForms() {
+		var existing = {};
+		els.passengerForms.querySelectorAll( '.nx-passenger-group' ).forEach( function ( group, i ) {
+			var data = {};
+			group.querySelectorAll( '[data-field]' ).forEach( function ( input ) {
+				data[ input.getAttribute( 'data-field' ) ] = input.value;
+			} );
+			existing[ group.getAttribute( 'data-passenger-type' ) + '-' + i ] = data;
+		} );
+
+		els.passengerForms.innerHTML = '';
+		var adultIndex = 0;
+		var childIndex = 0;
+		for ( var i = 0; i < state.adults + state.children; i++ ) {
+			var type = i < state.adults ? 'adult' : 'child';
+			var index = 'adult' === type ? adultIndex++ : childIndex++;
+			var group = passengerGroup( type, index );
+			var saved = existing[ type + '-' + i ];
+			if ( saved ) {
+				group.querySelectorAll( '[data-field]' ).forEach( function ( input ) {
+					if ( saved[ input.getAttribute( 'data-field' ) ] ) {
+						input.value = saved[ input.getAttribute( 'data-field' ) ];
+					}
+				} );
+			}
+			els.passengerForms.appendChild( group );
 		}
-		return opt.textContent.split( ' — ' )[ 0 ].trim();
 	}
 
-	function guestLine() {
-		var line = state.adults + ' adult' + ( state.adults > 1 ? 's' : '' );
-		if ( state.children > 0 ) {
-			line += ', ' + state.children + ' child' + ( state.children > 1 ? 'ren' : '' );
-		}
-		return line;
+	function collectPassengers() {
+		var passengers = [];
+		els.passengerForms.querySelectorAll( '.nx-passenger-group' ).forEach( function ( group ) {
+			var passenger = { passenger_type: group.getAttribute( 'data-passenger-type' ) };
+			group.querySelectorAll( '[data-field]' ).forEach( function ( input ) {
+				passenger[ input.getAttribute( 'data-field' ) ] = input.value;
+			} );
+			passengers.push( passenger );
+		} );
+		return passengers;
 	}
 
-	function recalc() {
-		var price = tripPrice();
-		var hasTrip = !! els.tripSelect.value;
-		var childPrice = Math.round( price / 2 );
-		var total = price * state.adults + childPrice * state.children;
-
-		if ( ! hasTrip ) {
-			els.totalBreakdown.textContent = 'Select an excursion';
-			els.totalValue.textContent = '—';
-			els.payCtaTotal.textContent = '—';
-			els.goPay.disabled = true;
-			els.waRequest.setAttribute( 'href', '#' );
-			return;
-		}
-
-		var parts = [ state.adults + ' adult' + ( state.adults > 1 ? 's' : '' ) + ' × $' + price ];
-		if ( state.children > 0 ) {
-			parts.push( state.children + ' child' + ( state.children > 1 ? 'ren' : '' ) + ' × $' + childPrice );
-		}
-
-		els.totalBreakdown.textContent = parts.join( '   +   ' );
-		els.totalValue.textContent = '$' + total;
-		els.payCtaTotal.textContent = '$' + total;
-		els.goPay.disabled = false;
-
-		var message =
-			'Hi ' + cfg.siteName + "! I'd like to request a booking:\n" +
-			'• Excursion: ' + tripName() + '\n' +
-			'• Date: ' + ( els.date.value || 'to be confirmed' ) + '\n' +
-			'• Guests: ' + guestLine() + '\n' +
-			'• Name: ' + ( els.name.value || '—' ) + '\n' +
-			'• Estimated total (approx): $' + total + '\n' +
-			'Please confirm availability. Thank you!';
-		els.waRequest.setAttribute( 'href', waLink( message ) );
+	function passengersComplete() {
+		var required = [ 'first_name', 'last_name', 'nationality', 'date_of_birth', 'passport_number' ];
+		return collectPassengers().every( function ( passenger ) {
+			return required.every( function ( field ) {
+				return passenger[ field ] && '' !== passenger[ field ].trim();
+			} );
+		} );
 	}
+
+	/* Counters --------------------------------------------------------------*/
 
 	function setCounter( type, dir ) {
-		if ( type === 'adults' ) {
+		if ( 'adults' === type ) {
 			state.adults = Math.max( 1, Math.min( 20, state.adults + dir ) );
 			els.adultsValue.textContent = state.adults;
 		} else {
 			state.children = Math.max( 0, Math.min( 20, state.children + dir ) );
 			els.childrenValue.textContent = state.children;
 		}
-		recalc();
+		renderPassengerForms();
+		recalcPrice();
+		validateForm();
 	}
 
 	modal.querySelectorAll( '[data-counter]' ).forEach( function ( btn ) {
@@ -128,96 +156,162 @@
 		} );
 	} );
 
-	[ els.tripSelect, els.date, els.name ].forEach( function ( el ) {
-		el.addEventListener( 'input', recalc );
-		el.addEventListener( 'change', recalc );
-	} );
+	/* Availability ------------------------------------------------------------*/
 
-	/* Steps ----------------------------------------------------------------*/
+	els.tripSelect.addEventListener( 'change', function () {
+		els.slotSelect.innerHTML = '<option value="">Loading departures…</option>';
+		els.slotSelect.disabled = true;
+		recalcPrice();
+		validateForm();
 
-	function showStep( step ) {
-		modal.querySelectorAll( '[data-step-view]' ).forEach( function ( view ) {
-			view.classList.toggle( 'is-active', view.getAttribute( 'data-step-view' ) === step );
-		} );
-	}
-
-	els.goPay.addEventListener( 'click', function () {
-		if ( ! els.tripSelect.value ) {
+		var excursionId = els.tripSelect.value;
+		if ( ! excursionId ) {
+			els.slotSelect.innerHTML = '<option value="">Select an excursion first…</option>';
 			return;
 		}
-		els.payTripName.textContent = tripName();
-		els.payDate.textContent = els.date.value || 'To be confirmed';
-		els.payGuests.textContent = guestLine();
-		var totalText = els.totalValue.textContent;
-		els.payTotalBig.textContent = totalText;
-		els.payBtnTotal.textContent = totalText;
-		showStep( 'pay' );
+
+		api( '/excursions/' + excursionId + '/availability', 'GET' )
+			.then( function ( data ) {
+				var slots = data.slots || [];
+				if ( ! slots.length ) {
+					els.slotSelect.innerHTML = '<option value="">No departures available</option>';
+					return;
+				}
+				els.slotSelect.innerHTML = '<option value="">Select a departure…</option>' + slots.map( function ( slot ) {
+					var date = new Date( slot.departure_start.replace( ' ', 'T' ) );
+					var label = date.toLocaleString( undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' } );
+					return '<option value="' + slot.id + '">' + label + ' — ' + slot.remaining_capacity + ' spots left</option>';
+				} ).join( '' );
+				els.slotSelect.disabled = false;
+			} )
+			.catch( function () {
+				els.slotSelect.innerHTML = '<option value="">Couldn’t load departures — try again</option>';
+			} );
 	} );
 
-	modal.querySelector( '[data-back-to-details]' ).addEventListener( 'click', function () {
-		showStep( 'details' );
+	els.slotSelect.addEventListener( 'change', function () {
+		recalcPrice();
+		validateForm();
 	} );
 
-	/* Card formatting --------------------------------------------------------*/
+	/* Pricing -------------------------------------------------------------------*/
 
-	els.cardNumber.addEventListener( 'input', function ( e ) {
-		var digits = e.target.value.replace( /\D/g, '' ).slice( 0, 16 );
-		var groups = digits.match( /.{1,4}/g );
-		e.target.value = groups ? groups.join( ' ' ) : '';
-		validateCard();
-	} );
-
-	els.cardExp.addEventListener( 'input', function ( e ) {
-		var digits = e.target.value.replace( /\D/g, '' ).slice( 0, 4 );
-		if ( digits.length > 2 ) {
-			digits = digits.slice( 0, 2 ) + '/' + digits.slice( 2 );
+	function recalcPrice() {
+		var excursionId = els.tripSelect.value;
+		var slotId = els.slotSelect.value;
+		if ( ! excursionId || ! slotId ) {
+			els.totalBreakdown.textContent = 'Select an excursion and departure';
+			els.totalValue.textContent = '—';
+			els.payCtaTotal.textContent = '—';
+			state.lastPrice = null;
+			return;
 		}
-		e.target.value = digits;
-		validateCard();
+
+		api( '/price', 'POST', { excursion_id: Number( excursionId ), slot_id: Number( slotId ), passengers: collectPassengers() } )
+			.then( function ( price ) {
+				state.lastPrice = price;
+				var parts = [ price.adult_count + ' adult' + ( price.adult_count === 1 ? '' : 's' ) + ' × $' + price.adult_price ];
+				if ( price.child_count > 0 ) {
+					parts.push( price.child_count + ' child' + ( price.child_count === 1 ? '' : 'ren' ) + ' × $' + price.child_price );
+				}
+				els.totalBreakdown.textContent = parts.join( '   +   ' );
+				els.totalValue.textContent = '$' + price.total_usd.toFixed( 2 );
+				els.payCtaTotal.textContent = '$' + price.total_usd.toFixed( 2 );
+			} )
+			.catch( function () {
+				els.totalBreakdown.textContent = 'Couldn’t calculate price';
+			} );
+	}
+
+	[ els.contactName, els.contactPhone, els.contactCountry, els.contactHotel, els.contactRoom, els.contactPickup, els.contactNotes, els.terms ].forEach( function ( el ) {
+		el.addEventListener( 'input', validateForm );
+		el.addEventListener( 'change', validateForm );
+	} );
+	els.passengerForms.addEventListener( 'input', function () {
+		recalcPrice();
+		validateForm();
 	} );
 
-	els.cardCvc.addEventListener( 'input', function ( e ) {
-		e.target.value = e.target.value.replace( /\D/g, '' ).slice( 0, 4 );
-		validateCard();
-	} );
+	/* Validation --------------------------------------------------------------*/
 
-	els.cardName.addEventListener( 'input', validateCard );
-
-	function validateCard() {
-		var digits = els.cardNumber.value.replace( /\D/g, '' ).length;
-		var valid = digits >= 12 && els.cardName.value.trim() !== '' && els.cardExp.value.length >= 5 && els.cardCvc.value.length >= 3;
+	function validateForm() {
+		var valid = !! els.tripSelect.value &&
+			!! els.slotSelect.value &&
+			!! state.lastPrice &&
+			passengersComplete() &&
+			els.contactName.value.trim() !== '' &&
+			els.contactPhone.value.trim() !== '' &&
+			els.contactCountry.value.trim() !== '' &&
+			els.contactPickup.value.trim() !== '' &&
+			els.terms.checked;
 		els.payBtn.disabled = ! valid;
 		return valid;
 	}
 
+	/* Submit --------------------------------------------------------------------*/
+
 	els.payBtn.addEventListener( 'click', function () {
-		if ( ! validateCard() ) {
+		if ( ! validateForm() ) {
 			return;
 		}
-		showStep( 'processing' );
-		setTimeout( function () {
-			var ref = 'NEF-' + Math.random().toString( 36 ).slice( 2, 6 ).toUpperCase() + Math.floor( 100 + Math.random() * 900 );
-			els.successRef.textContent = ref;
-			els.successName.textContent = els.name.value || 'traveller';
-			els.successTrip.textContent = tripName();
-			els.successTrip2.textContent = tripName();
-			els.successDate.textContent = els.date.value || 'To be confirmed';
-			els.successGuests.textContent = guestLine();
-			els.successTotal.textContent = els.payTotalBig.textContent;
-			showStep( 'success' );
-		}, 1900 );
+		els.formMessage.textContent = '';
+		els.payBtn.disabled = true;
+
+		var payload = {
+			excursion_id: Number( els.tripSelect.value ),
+			slot_id: Number( els.slotSelect.value ),
+			passengers: collectPassengers(),
+			contact: {
+				full_name: els.contactName.value,
+				phone: els.contactPhone.value,
+				country: els.contactCountry.value,
+				hotel: els.contactHotel.value,
+				room: els.contactRoom.value,
+				pickup_location: els.contactPickup.value,
+				special_requests: els.contactNotes.value,
+			},
+		};
+
+		showStep( 'redirecting' );
+
+		api( '/booking/create-payment-session', 'POST', payload )
+			.then( function ( result ) {
+				var checkoutUrl = result.payment_session && result.payment_session.checkout_url;
+				if ( checkoutUrl ) {
+					window.location.href = checkoutUrl;
+					return;
+				}
+				showStep( 'details' );
+				els.payBtn.disabled = false;
+				els.formMessage.textContent = 'Your booking was created (ref ' + result.booking.booking_ref + '), but online payment isn’t configured yet. Please contact us to complete it.';
+			} )
+			.catch( function ( err ) {
+				showStep( 'details' );
+				els.payBtn.disabled = false;
+				els.formMessage.textContent = err.message;
+			} );
 	} );
 
-	els.doneBtn.addEventListener( 'click', closeBooking );
+	/* Open / close ----------------------------------------------------------------*/
 
-	/* Open / close -----------------------------------------------------------*/
+	function currentUrlWithRedirect( baseUrl ) {
+		var url = new URL( baseUrl, window.location.origin );
+		url.searchParams.set( 'redirect_to', window.location.href );
+		return url.toString();
+	}
 
 	function openBooking( tripId ) {
-		if ( tripId ) {
-			els.tripSelect.value = String( tripId );
+		if ( ! cfg.loggedIn ) {
+			els.gateLogin.setAttribute( 'href', currentUrlWithRedirect( cfg.loginUrl ) );
+			els.gateRegister.setAttribute( 'href', currentUrlWithRedirect( cfg.registerUrl ) );
+			showStep( 'gate' );
+		} else {
+			if ( tripId ) {
+				els.tripSelect.value = String( tripId );
+				els.tripSelect.dispatchEvent( new Event( 'change' ) );
+			}
+			showStep( 'details' );
 		}
-		recalc();
-		showStep( 'details' );
 		modal.classList.add( 'is-open' );
 		document.body.style.overflow = 'hidden';
 	}
@@ -238,10 +332,19 @@
 	} );
 
 	document.addEventListener( 'keydown', function ( e ) {
-		if ( e.key === 'Escape' && modal.classList.contains( 'is-open' ) ) {
+		if ( 'Escape' === e.key && modal.classList.contains( 'is-open' ) ) {
 			closeBooking();
 		}
 	} );
 
-	recalc();
+	renderPassengerForms();
+
+	if ( cfg.contact ) {
+		if ( cfg.contact.full_name ) {
+			els.contactName.value = cfg.contact.full_name;
+		}
+		if ( cfg.contact.phone ) {
+			els.contactPhone.value = cfg.contact.phone;
+		}
+	}
 } )();

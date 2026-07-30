@@ -29,12 +29,18 @@ function nefertari_whatsapp_link( $message = '' ) {
 
 /* -------------------------------------------------------------------------
  * Excursion helpers
+ *
+ * The `excursion` post type and its fields are owned by the Nefertari
+ * Booking Core plugin (meta keys prefixed `_nefertari_`), which stores
+ * repeatable fields (highlights, included/excluded items, itinerary) as a
+ * single newline-joined string rather than a PHP array, and has no concept
+ * of multi-day itineraries — every helper below adapts to that shape.
  * ---------------------------------------------------------------------- */
 
 /**
- * Featured image URL, falling back to a plain _nx_image_url meta value.
- * Works for excursions and blog posts alike, so seeded demo content can show
- * photos before anyone has uploaded a real featured image.
+ * Featured image URL, falling back to a plain meta value. Blog posts use
+ * the theme's own `_nx_image_url`; excursions use the plugin's
+ * `_nefertari_remote_image` (its prototype/demo image field).
  */
 function nefertari_image_url( $post_id, $size = 'large' ) {
 	if ( has_post_thumbnail( $post_id ) ) {
@@ -43,23 +49,75 @@ function nefertari_image_url( $post_id, $size = 'large' ) {
 			return $url;
 		}
 	}
-	return get_post_meta( $post_id, '_nx_image_url', true );
+	$fallback_key = 'excursion' === get_post_type( $post_id ) ? '_nefertari_remote_image' : '_nx_image_url';
+	return get_post_meta( $post_id, $fallback_key, true );
 }
 
+/**
+ * Explodes one of the plugin's newline-joined list fields into an array,
+ * dropping empty lines.
+ */
+function nefertari_excursion_list_field( $post_id, $meta_key ) {
+	$raw = get_post_meta( $post_id, $meta_key, true );
+	if ( ! $raw ) {
+		return array();
+	}
+	return array_values( array_filter( array_map( 'trim', preg_split( '/\r\n|\r|\n/', $raw ) ) ) );
+}
+
+/**
+ * Gallery images: the plugin's real Media Library picker (`gallery_ids`)
+ * takes priority; its prototype/demo URL list (`gallery_urls`) is the
+ * fallback for excursions that haven't had real photos uploaded yet.
+ */
 function nefertari_excursion_gallery_urls( $post_id ) {
-	$gallery = get_post_meta( $post_id, '_nx_gallery', true );
-	return is_array( $gallery ) ? $gallery : array();
+	$ids = array_filter( array_map( 'trim', explode( ',', (string) get_post_meta( $post_id, '_nefertari_gallery_ids', true ) ) ) );
+	if ( $ids ) {
+		$urls = array();
+		foreach ( $ids as $id ) {
+			$url = wp_get_attachment_image_url( (int) $id, 'large' );
+			if ( $url ) {
+				$urls[] = $url;
+			}
+		}
+		if ( $urls ) {
+			return $urls;
+		}
+	}
+	return nefertari_excursion_list_field( $post_id, '_nefertari_gallery_urls' );
 }
 
 function nefertari_excursion_gradient_css( $post_id ) {
-	$start = get_post_meta( $post_id, '_nx_gradient_start', true ) ?: '#FBBA6A';
-	$end   = get_post_meta( $post_id, '_nx_gradient_end', true ) ?: '#D93A7C';
-	return sprintf( 'linear-gradient(135deg,%s,%s)', $start, $end );
+	return get_post_meta( $post_id, '_nefertari_gradient', true ) ?: 'linear-gradient(135deg,#FBBA6A,#D93A7C)';
 }
 
 function nefertari_excursion_price( $post_id ) {
-	$price = get_post_meta( $post_id, '_nx_price', true );
-	return $price ? '$' . (int) $price : '';
+	$price = get_post_meta( $post_id, '_nefertari_adult_price_usd', true );
+	if ( ! $price ) {
+		return '';
+	}
+	$decimals = ( (float) $price == (int) $price ) ? 0 : 2;
+	return '$' . number_format( (float) $price, $decimals );
+}
+
+function nefertari_excursion_location( $post_id ) {
+	return get_post_meta( $post_id, '_nefertari_location', true );
+}
+
+function nefertari_excursion_duration( $post_id ) {
+	return get_post_meta( $post_id, '_nefertari_duration', true );
+}
+
+/**
+ * The plugin's native excerpt box and its `promo_description` meta both
+ * serve as a short blurb; prefer the meta field where an editor filled it in.
+ */
+function nefertari_excursion_blurb( $post_id ) {
+	$promo = get_post_meta( $post_id, '_nefertari_promo_description', true );
+	if ( $promo ) {
+		return $promo;
+	}
+	return get_the_excerpt( $post_id );
 }
 
 function nefertari_excursion_category_label( $post_id ) {
@@ -71,23 +129,37 @@ function nefertari_excursion_category_label( $post_id ) {
 }
 
 function nefertari_excursion_highlights( $post_id ) {
-	$items = get_post_meta( $post_id, '_nx_highlights', true );
-	return is_array( $items ) ? $items : array();
+	return nefertari_excursion_list_field( $post_id, '_nefertari_highlights' );
 }
 
 function nefertari_excursion_includes( $post_id ) {
-	$items = get_post_meta( $post_id, '_nx_includes', true );
-	return is_array( $items ) ? $items : array();
+	return nefertari_excursion_list_field( $post_id, '_nefertari_included_items' );
 }
 
 function nefertari_excursion_excludes( $post_id ) {
-	$items = get_post_meta( $post_id, '_nx_excludes', true );
-	return is_array( $items ) ? $items : array();
+	return nefertari_excursion_list_field( $post_id, '_nefertari_excluded_items' );
 }
 
+/**
+ * The plugin models itinerary as a flat list of lines (e.g. "5:00 AM -
+ * Pyramids of Giza"), with no day/label grouping. Rendered as a single
+ * "Itinerary" day so the existing collapsible template needs no changes —
+ * multi-day trips just show one panel instead of Day 1 / Day 2.
+ */
 function nefertari_excursion_itinerary( $post_id ) {
-	$days = get_post_meta( $post_id, '_nx_itinerary', true );
-	return is_array( $days ) ? array_values( $days ) : array();
+	$lines = nefertari_excursion_list_field( $post_id, '_nefertari_itinerary' );
+	if ( empty( $lines ) ) {
+		return array();
+	}
+	$steps = array();
+	foreach ( $lines as $line ) {
+		if ( preg_match( '/^(.+?)\s*[-–—]\s*(.+)$/', $line, $matches ) ) {
+			$steps[] = array( 'time' => $matches[1], 'title' => $matches[2], 'text' => '' );
+		} else {
+			$steps[] = array( 'time' => '', 'title' => $line, 'text' => '' );
+		}
+	}
+	return array( array( 'label' => 'Itinerary', 'steps' => $steps ) );
 }
 
 /* -------------------------------------------------------------------------
@@ -172,4 +244,43 @@ function nefertari_icon( $name, $stroke = 'currentColor', $size = 16 ) {
 		esc_attr( $stroke ),
 		$paths[ $name ]
 	);
+}
+
+/* -------------------------------------------------------------------------
+ * Booking status display (account page, payment-result page)
+ * ---------------------------------------------------------------------- */
+
+function nefertari_booking_status_tone( $status ) {
+	$map = array(
+		'confirmed'              => 'success',
+		'completed'              => 'success',
+		'awaiting_payment'       => 'warning',
+		'payment_processing'     => 'warning',
+		'cancellation_requested' => 'warning',
+		'payment_failed'         => 'danger',
+		'payment_expired'        => 'danger',
+		'cancelled'              => 'danger',
+	);
+	return $map[ $status ] ?? 'neutral';
+}
+
+function nefertari_booking_status_label( $status ) {
+	return ucwords( str_replace( '_', ' ', $status ) );
+}
+
+/**
+ * A "Book" call-to-action that opens the real booking modal when the
+ * plugin is active, or falls back to a WhatsApp inquiry link so the button
+ * is never dead if the plugin is missing/deactivated.
+ */
+function nefertari_book_button( $label, $classes = 'nx-btn nx-btn--primary', $excursion_id = 0 ) {
+	if ( nefertari_booking_plugin_active() ) {
+		$trip_attr = $excursion_id ? ' data-trip-id="' . esc_attr( $excursion_id ) . '"' : '';
+		printf( '<button type="button" class="%1$s" data-open-booking%2$s>%3$s</button>', esc_attr( $classes ), $trip_attr, esc_html( $label ) );
+		return;
+	}
+	$message = $excursion_id
+		? "Hi " . get_bloginfo( 'name' ) . ", I'd like to book " . get_the_title( $excursion_id ) . '.'
+		: "Hi " . get_bloginfo( 'name' ) . ", I'd like to book an excursion.";
+	printf( '<a href="%1$s" target="_blank" rel="noopener" class="%2$s">%3$s</a>', esc_url( nefertari_whatsapp_link( $message ) ), esc_attr( $classes ), esc_html( $label ) );
 }

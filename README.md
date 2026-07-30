@@ -5,36 +5,70 @@ Custom WordPress theme for **Nefertari Travel**, an Egypt excursion booking site
 Built from a Claude Design export — see the original prototype's chat history
 for the full design brief.
 
+## Requires
+
+**[Nefertari Booking Core](https://github.com/cgdmohamed/nefertari-travel-core)**
+plugin — the theme no longer registers its own `excursion` post type or demo
+booking flow. It reads real excursion data and drives real bookings/payments
+through that plugin's post type and REST API. Without it active, excursion
+pages, the booking modal, and account booking history won't work (the theme
+shows an admin notice, and "Book" buttons fall back to a WhatsApp inquiry
+link so nothing is dead).
+
 ## Install
 
-1. Copy this folder into `wp-content/themes/nefertari-travel` on a WordPress
-   install (6.0+, PHP 7.4+).
-2. Activate **Nefertari Travel** under Appearance → Themes.
-3. On activation the theme seeds demo content automatically: 8 excursions,
-   6 blog posts, 3 testimonials, and default site settings — so the site
-   looks like the design immediately.
+1. Install and activate the **Nefertari Booking Core** plugin first.
+2. Copy this folder into `wp-content/themes/nefertari-travel` and activate
+   **Nefertari Travel** under Appearance → Themes.
+3. On activation the theme seeds its own demo content: 3 testimonials, 6 blog
+   posts, and 4 account pages (Login, Create Account, My Account, Payment
+   Result). For demo excursions (with real slots), use the plugin's own
+   **Tools → Import Prototype Demo Data**.
 4. Configure contact info, socials, trust stats and the hero image under
    **Appearance → Customize → Nefertari Travel Settings**.
+5. If public registration should be open, make sure *Settings → General →
+   "Anyone can register"* is checked (the theme's registration page respects it).
+
+## Booking flow
+
+The booking modal is a real, account-gated flow against the plugin's REST
+API (`nefertari/v1`): select an excursion → real departure slot (with live
+remaining capacity) → passenger/passport details for each guest → contact
+details → a live price from the plugin's `Pricing_Service` → redirect to a
+real Kashier checkout. Logged-out visitors see a login/register prompt
+instead of the form (the plugin has no guest checkout). After payment,
+Kashier redirects to the theme's Payment Result page, which polls the
+plugin's booking-status endpoint for the real outcome (the redirect itself
+proves nothing — the webhook is the source of truth and can land a moment
+later).
 
 ## Structure
 
-- `functions.php` + `inc/` — theme bootstrap: setup/assets, custom post types
-  (`excursion`, `testimonial`), hand-rolled admin meta boxes, Customizer
-  settings, template helpers/icons, and the demo content seeder.
+- `functions.php` + `inc/` — theme bootstrap:
+  - `plugin-bridge.php` — the plugin dependency check/admin notice, plus the
+    theme's own supplementary "trust signal" fields (rating, review count,
+    "booked this month") added to the plugin's `excursion` post type — the
+    plugin doesn't model marketing stats, so these stay theme-owned.
+  - `post-types.php` — just `testimonial` now; `excursion` belongs to the plugin.
+  - `accounts.php` — login/registration/account-page logic, and seeding the
+    four account pages (`page-login.php`, `page-register.php`,
+    `page-account.php`, `page-payment-result.php`) by slug.
+  - `template-tags.php` — excursion helpers adapted to the plugin's field
+    format (flat newline-joined lists, no day-grouped itinerary, `_nefertari_*`
+    meta keys) plus the theme's own icons/Customizer/testimonial helpers.
+  - `customizer.php`, `seed-content.php` (testimonials + blog posts only), `meta-boxes.php` (testimonial only).
 - `template-parts/home|excursion|blog|modal/` — one file per section of the
-  design (hero, excursion grid, itinerary, booking modal, etc.).
-- `assets/css/style.css` — all styling, ported into semantic classes with
-  CSS custom properties for the brand palette.
-- `assets/js/` — `main.js` (gallery thumbnails), `booking.js` (the booking
-  modal flow), `admin-repeater.js` (admin repeater fields).
+  design (hero, excursion grid, itinerary, the real booking modal, etc.).
+- `assets/css/style.css` — all styling, including the auth/account pages.
+- `assets/js/` — `main.js` (gallery thumbnails), `booking.js` (the real
+  booking flow), `payment-result.js` (status polling after Kashier redirect).
 
 ## Notes
 
-- The "Pay online" flow in the booking modal is a **front-end demo only** —
-  any card number is accepted and no real charge is made, matching the
-  original design's explicit scope. Wire up a real gateway (Stripe, Paymob,
-  etc.) before taking real payments.
-- Excursion/testimonial fields currently use plain post meta with custom
-  meta boxes (no plugin dependency). These are expected to be superseded by
-  a dedicated data-management plugin later — keep that in mind if you're
-  migrating field storage.
+- Itinerary display: the plugin stores itinerary as a flat list of lines
+  (no day/label grouping), so multi-day trips show as one "Itinerary" panel
+  instead of Day 1 / Day 2 — a straightforward consequence of the plugin's
+  data model, not a bug.
+- The theme's floating WhatsApp button and header/footer contact links are
+  unrelated to the booking flow — general inquiry channels, unaffected by
+  whether the plugin is active.

@@ -41,25 +41,25 @@ function nefertari_enqueue_assets() {
 	wp_enqueue_style( 'nefertari-style', NEFERTARI_URI . '/assets/css/style.css', array(), NEFERTARI_VERSION );
 
 	wp_enqueue_script( 'nefertari-main', NEFERTARI_URI . '/assets/js/main.js', array(), NEFERTARI_VERSION, true );
-	wp_enqueue_script( 'nefertari-booking', NEFERTARI_URI . '/assets/js/booking.js', array(), NEFERTARI_VERSION, true );
 
-	wp_localize_script( 'nefertari-booking', 'nefertariBooking', array(
-		'whatsapp'   => nefertari_whatsapp_number(),
-		'siteName'   => get_bloginfo( 'name' ),
-	) );
+	if ( nefertari_booking_plugin_active() ) {
+		wp_enqueue_script( 'nefertari-booking', NEFERTARI_URI . '/assets/js/booking.js', array(), NEFERTARI_VERSION, true );
+
+		$user = wp_get_current_user();
+		wp_localize_script( 'nefertari-booking', 'nefertariBooking', array(
+			'restUrl'     => esc_url_raw( rest_url( 'nefertari/v1' ) ),
+			'nonce'       => wp_create_nonce( 'wp_rest' ),
+			'whatsapp'    => nefertari_whatsapp_number(),
+			'siteName'    => get_bloginfo( 'name' ),
+			'loggedIn'    => is_user_logged_in(),
+			'loginUrl'    => nefertari_account_url( 'login' ),
+			'registerUrl' => nefertari_account_url( 'register' ),
+			'accountUrl'  => nefertari_account_url( 'account' ),
+			'contact'     => array(
+				'full_name' => $user->exists() ? $user->display_name : '',
+				'phone'     => $user->exists() ? get_user_meta( $user->ID, 'nefertari_phone', true ) : '',
+			),
+		) );
+	}
 }
 add_action( 'wp_enqueue_scripts', 'nefertari_enqueue_assets' );
-
-function nefertari_admin_assets( $hook ) {
-	global $post_type;
-	if ( 'excursion' !== $post_type ) {
-		return;
-	}
-	if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
-		return;
-	}
-	wp_enqueue_style( 'wp-color-picker' );
-	wp_enqueue_script( 'nefertari-repeater', NEFERTARI_URI . '/assets/js/admin-repeater.js', array( 'jquery', 'wp-color-picker' ), NEFERTARI_VERSION, true );
-	wp_enqueue_style( 'nefertari-admin', NEFERTARI_URI . '/assets/css/admin.css', array(), NEFERTARI_VERSION );
-}
-add_action( 'admin_enqueue_scripts', 'nefertari_admin_assets' );

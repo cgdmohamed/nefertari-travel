@@ -30,8 +30,8 @@ while ( have_posts() ) :
 					<span class="nx-badge-orange"><svg width="13" height="13" viewBox="0 0 24 24" fill="#C2410C" stroke="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"></path></svg> Likely to sell out</span>
 				</div>
 				<div class="nx-detail-facts">
-					<span class="nx-detail-fact"><?php echo nefertari_icon( 'pin', '#B07A55', 15 ); ?> <?php echo esc_html( get_post_meta( $excursion_id, '_nx_location', true ) ); ?></span>
-					<span class="nx-detail-fact"><?php echo nefertari_icon( 'clock', '#B07A55', 15 ); ?> <?php echo esc_html( get_post_meta( $excursion_id, '_nx_duration', true ) ); ?></span>
+					<span class="nx-detail-fact"><?php echo nefertari_icon( 'pin', '#B07A55', 15 ); ?> <?php echo esc_html( nefertari_excursion_location( $excursion_id ) ); ?></span>
+					<span class="nx-detail-fact"><?php echo nefertari_icon( 'clock', '#B07A55', 15 ); ?> <?php echo esc_html( nefertari_excursion_duration( $excursion_id ) ); ?></span>
 					<span class="nx-detail-fact"><?php echo nefertari_icon( 'group', '#B07A55', 15 ); ?> Small groups</span>
 					<span class="nx-detail-fact"><?php echo nefertari_icon( 'book', '#B07A55', 15 ); ?> English guide</span>
 					<span class="nx-detail-fact"><?php echo nefertari_icon( 'shield-check', '#1F8A5B', 15 ); ?> Free cancellation</span>
