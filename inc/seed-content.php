@@ -78,12 +78,21 @@ function nefertari_seed_testimonials() {
 	}
 }
 
+function nefertari_seed_get_or_create_category( $name ) {
+	$term = term_exists( $name, 'category' );
+	if ( $term ) {
+		return (int) $term['term_id'];
+	}
+	$inserted = wp_insert_term( $name, 'category' );
+	if ( is_wp_error( $inserted ) ) {
+		return (int) get_option( 'default_category' );
+	}
+	return (int) $inserted['term_id'];
+}
+
 function nefertari_seed_blog_posts() {
 	foreach ( nefertari_seed_blog_post_data() as $data ) {
-		$category_id = get_cat_ID( $data['category'] );
-		if ( ! $category_id ) {
-			$category_id = wp_insert_category( array( 'cat_name' => $data['category'] ) );
-		}
+		$category_id = nefertari_seed_get_or_create_category( $data['category'] );
 
 		$body = '';
 		foreach ( $data['body'] as $block ) {
