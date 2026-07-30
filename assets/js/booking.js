@@ -13,6 +13,43 @@
 		return;
 	}
 
+	/* Open / close is wired up first and depends on nothing else below, so a
+	 * problem anywhere in the form (a missing field, a failed fetch, etc.)
+	 * can never leave the "Book" button unresponsive. */
+	function closeBooking() {
+		modal.classList.remove( 'is-open' );
+		document.body.style.overflow = '';
+	}
+
+	function openBookingSafe( tripId ) {
+		try {
+			openBooking( tripId );
+		} catch ( err ) {
+			// Even if step/field setup below fails, still show the modal.
+			modal.classList.add( 'is-open' );
+			document.body.style.overflow = 'hidden';
+			if ( window.console ) {
+				console.error( 'Nefertari booking modal error:', err ); // eslint-disable-line no-console
+			}
+		}
+	}
+
+	document.querySelectorAll( '[data-open-booking]' ).forEach( function ( trigger ) {
+		trigger.addEventListener( 'click', function () {
+			openBookingSafe( trigger.getAttribute( 'data-trip-id' ) );
+		} );
+	} );
+
+	modal.querySelectorAll( '[data-close-booking]' ).forEach( function ( el ) {
+		el.addEventListener( 'click', closeBooking );
+	} );
+
+	document.addEventListener( 'keydown', function ( e ) {
+		if ( 'Escape' === e.key && modal.classList.contains( 'is-open' ) ) {
+			closeBooking();
+		}
+	} );
+
 	var els = {
 		tripSelect: document.getElementById( 'nx-trip-select' ),
 		slotSelect: document.getElementById( 'nx-slot-select' ),
@@ -292,8 +329,6 @@
 			} );
 	} );
 
-	/* Open / close ----------------------------------------------------------------*/
-
 	function currentUrlWithRedirect( baseUrl ) {
 		var url = new URL( baseUrl, window.location.origin );
 		url.searchParams.set( 'redirect_to', window.location.href );
@@ -315,27 +350,6 @@
 		modal.classList.add( 'is-open' );
 		document.body.style.overflow = 'hidden';
 	}
-
-	function closeBooking() {
-		modal.classList.remove( 'is-open' );
-		document.body.style.overflow = '';
-	}
-
-	document.querySelectorAll( '[data-open-booking]' ).forEach( function ( trigger ) {
-		trigger.addEventListener( 'click', function () {
-			openBooking( trigger.getAttribute( 'data-trip-id' ) );
-		} );
-	} );
-
-	modal.querySelectorAll( '[data-close-booking]' ).forEach( function ( el ) {
-		el.addEventListener( 'click', closeBooking );
-	} );
-
-	document.addEventListener( 'keydown', function ( e ) {
-		if ( 'Escape' === e.key && modal.classList.contains( 'is-open' ) ) {
-			closeBooking();
-		}
-	} );
 
 	renderPassengerForms();
 
