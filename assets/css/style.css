@@ -114,6 +114,9 @@ button{ font-family:inherit; }
   font-family:var(--nx-font-display); font-weight:800; font-size:22px; box-shadow:0 6px 16px rgba(217,58,124,0.32);
   flex:none;
 }
+.nx-brand-mark--logo{ background:none; box-shadow:none; border-radius:0; width:auto; height:42px; }
+.nx-brand-mark--logo img{ display:block; height:42px; width:auto; max-width:160px; object-fit:contain; }
+.nx-brand-mark--logo a{ display:flex; }
 .nx-brand-text{ line-height:1; }
 .nx-brand-name{ font-family:var(--nx-font-display); font-weight:800; font-size:20px; letter-spacing:-0.4px; }
 .nx-brand-name span{ color:var(--nx-pink); }
@@ -524,7 +527,10 @@ select.nx-input{ cursor:pointer; }
 .nx-footer{ background:var(--nx-ink); color:#C9B2AB; }
 .nx-foot{ max-width:1280px; margin:0 auto; padding:56px 6vw 30px; display:grid; grid-template-columns:1.6fr 1fr 1fr 1.3fr; gap:40px; }
 .nx-foot-brand{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
-.nx-foot-mark{ width:44px; height:44px; border-radius:13px; background:linear-gradient(135deg,#FBBA6A,#D93A7C); display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--nx-font-display); font-weight:800; font-size:22px; flex:none; }
+.nx-foot-mark{ width:44px; height:44px; border-radius:13px; background:var(--nx-gradient-brand); display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--nx-font-display); font-weight:800; font-size:22px; flex:none; }
+.nx-foot-mark--logo{ background:none; width:auto; height:44px; }
+.nx-foot-mark--logo img{ display:block; height:44px; width:auto; max-width:170px; object-fit:contain; }
+.nx-foot-mark--logo a{ display:flex; }
 .nx-foot-name{ color:#fff; font-family:var(--nx-font-display); font-weight:800; font-size:19px; }
 .nx-foot-sub{ font-size:12.5px; }
 .nx-foot-desc{ font-size:13.5px; line-height:1.65; max-width:300px; margin:0 0 18px; }

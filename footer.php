@@ -15,13 +15,17 @@ $wa_generic = nefertari_whatsapp_link( "Hi " . get_bloginfo( 'name' ) . ", I'd l
 		<div class="nx-foot">
 			<div>
 				<div class="nx-foot-brand">
-					<span class="nx-foot-mark">N</span>
+					<?php if ( has_custom_logo() ) : ?>
+						<span class="nx-foot-mark nx-foot-mark--logo"><?php the_custom_logo(); ?></span>
+					<?php else : ?>
+						<span class="nx-foot-mark"><?php echo esc_html( mb_substr( get_bloginfo( 'name' ), 0, 1 ) ); ?></span>
+					<?php endif; ?>
 					<div>
 						<div class="nx-foot-name"><?php bloginfo( 'name' ); ?></div>
 						<div class="nx-foot-sub">Red Sea &amp; Nile excursions · Egypt</div>
 					</div>
 				</div>
-				<p class="nx-foot-desc">Locally owned and Ministry-licensed since 2014. We've shown over <?php echo esc_html( nefertari_option( 'travellers_count', '12k+' ) ); ?> travellers the real Egypt — safely, comfortably and with people who love it.</p>
+				<p class="nx-foot-desc"><?php echo esc_html( nefertari_option( 'footer_description', "Locally owned and Ministry-licensed since 2014. We've shown over 12,000 travellers the real Egypt — safely, comfortably and with people who love it." ) ); ?></p>
 				<div class="nx-foot-rating"><span class="nx-stars">★★★★★</span> <strong style="color:#fff"><?php echo esc_html( nefertari_option( 'rating', '4.9' ) ); ?></strong> · <?php echo esc_html( nefertari_option( 'reviews_count', '2,400+' ) ); ?> reviews</div>
 				<div class="nx-foot-socials">
 					<a href="<?php echo esc_url( $wa_generic ); ?>" target="_blank" rel="noopener" class="nx-foot-social"><?php echo nefertari_icon( 'whatsapp', '#fff', 18 ); ?></a>
@@ -85,7 +89,20 @@ $wa_generic = nefertari_whatsapp_link( "Hi " . get_bloginfo( 'name' ) . ", I'd l
 		<div class="nx-foot-band">
 			<div class="nx-legal-row">
 				<span>© <?php echo esc_html( date_i18n( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?>. All rights reserved.</span>
-				<span class="nx-legal-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Cancellation policy</a></span>
+				<span class="nx-legal-links">
+					<?php
+					$legal_pages = array(
+						'privacy_page'      => 'Privacy',
+						'terms_page'        => 'Terms',
+						'cancellation_page' => 'Cancellation policy',
+					);
+					foreach ( $legal_pages as $option => $label ) :
+						$page_id = (int) nefertari_option( $option, 0 );
+						$url     = $page_id ? get_permalink( $page_id ) : '#';
+						?>
+						<a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $label ); ?></a>
+					<?php endforeach; ?>
+				</span>
 			</div>
 		</div>
 	</footer>

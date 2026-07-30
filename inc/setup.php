@@ -14,6 +14,12 @@ function nefertari_setup() {
 	add_theme_support( 'html5', array( 'search-form', 'comment-form', 'comment-list', 'gallery', 'caption', 'style', 'script' ) );
 	add_theme_support( 'align-wide' );
 	add_theme_support( 'responsive-embeds' );
+	add_theme_support( 'custom-logo', array(
+		'height'      => 44,
+		'width'       => 44,
+		'flex-height' => true,
+		'flex-width'  => true,
+	) );
 
 	set_post_thumbnail_size( 1000, 700, true );
 	add_image_size( 'nefertari-card', 600, 400, true );

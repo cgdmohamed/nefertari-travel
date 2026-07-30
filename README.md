@@ -24,10 +24,32 @@ link so nothing is dead).
    posts, and 4 account pages (Login, Create Account, My Account, Payment
    Result). For demo excursions (with real slots), use the plugin's own
    **Tools → Import Prototype Demo Data**.
-4. Configure contact info, socials, trust stats and the hero image under
-   **Appearance → Customize → Nefertari Travel Settings**.
+4. Customize branding, copy, and contact info under
+   **Appearance → Customize → Nefertari Travel Settings** (see below).
 5. If public registration should be open, make sure *Settings → General →
    "Anyone can register"* is checked (the theme's registration page respects it).
+
+## Customization (Appearance → Customize → Nefertari Travel Settings)
+
+Everything a site owner would want to change themselves lives here — no
+code editing required:
+
+- **Site Identity** (core WP, appears above the theme's panel) — logo
+  upload. Falls back to a colored monogram of the site's first letter if
+  no logo is set.
+- **Branding & Colors** — 3 color pickers (primary/secondary/accent) that
+  re-theme every gradient, button, and accent across the whole site via
+  CSS custom property overrides — no CSS editing needed.
+- **Contact & Hours** — phone, WhatsApp number, email, address, hours.
+- **Social Links** — Facebook, Instagram, TikTok, X.
+- **Trust & Stats** — rating, review count, traveller count, license number.
+- **Homepage Hero** — image, badge text, all three heading lines, subheading,
+  and the floating "free hotel pickup" badge text.
+- **Why Choose Us Section** — section heading/subheading and all 4 tiles'
+  title + text (icons stay fixed).
+- **Contact CTA Section** — heading, subheading, button label.
+- **Footer** — brand description paragraph, and Privacy/Terms/Cancellation
+  policy links (pick any existing Page from a dropdown).
 
 ## Booking flow
 
