@@ -3,9 +3,10 @@
  * Seeds demo content on theme activation so the site matches the original
  * design mockup out of the box: 8 excursions, 6 blog posts, 3 testimonials.
  *
- * Runs once (guarded by the `nefertari_seeded` option) so re-activating the
- * theme never duplicates content. Safe to delete this file entirely once
- * real content — or the planned data plugin — takes over.
+ * Each content type is seeded independently and skips itself if that type
+ * already has published posts — so a re-activation (including retrying
+ * after a partial failure) never creates duplicates. Safe to delete this
+ * file entirely once real content — or the planned data plugin — takes over.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -13,15 +14,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 function nefertari_seed_content() {
-	if ( get_option( 'nefertari_seeded' ) ) {
-		return;
-	}
-
 	nefertari_seed_excursions();
 	nefertari_seed_testimonials();
 	nefertari_seed_blog_posts();
-
-	update_option( 'nefertari_seeded', 1 );
 }
 add_action( 'after_switch_theme', 'nefertari_seed_content' );
 
@@ -30,6 +25,9 @@ function nefertari_seed_set_term( $post_id, $term_name ) {
 }
 
 function nefertari_seed_excursions() {
+	if ( (int) wp_count_posts( 'excursion' )->publish > 0 ) {
+		return;
+	}
 	foreach ( nefertari_seed_excursion_data() as $data ) {
 		$post_id = wp_insert_post( array(
 			'post_type'    => 'excursion',
@@ -63,6 +61,9 @@ function nefertari_seed_excursions() {
 }
 
 function nefertari_seed_testimonials() {
+	if ( (int) wp_count_posts( 'testimonial' )->publish > 0 ) {
+		return;
+	}
 	foreach ( nefertari_seed_testimonial_data() as $data ) {
 		$post_id = wp_insert_post( array(
 			'post_type'    => 'testimonial',
@@ -91,6 +92,9 @@ function nefertari_seed_get_or_create_category( $name ) {
 }
 
 function nefertari_seed_blog_posts() {
+	if ( (int) wp_count_posts( 'post' )->publish > 0 ) {
+		return;
+	}
 	foreach ( nefertari_seed_blog_post_data() as $data ) {
 		$category_id = nefertari_seed_get_or_create_category( $data['category'] );
 
