@@ -1,0 +1,91 @@
+/* Admin meta box styling for Nefertari Travel excursion fields */
+
+.nx-metabox-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 14px 24px;
+}
+
+.nx-field-row {
+	margin-bottom: 4px;
+}
+
+.nx-field-label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+.nx-repeater-rows {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-bottom: 8px;
+}
+
+.nx-repeater-row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.nx-repeater-row input {
+	flex: 1;
+}
+
+.nx-row-template,
+.nx-day-template,
+.nx-step-template {
+	display: none;
+}
+
+.nx-two-col {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0 28px;
+}
+
+.nx-itinerary-day {
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 14px;
+	margin-bottom: 14px;
+	background: #f9f9f9;
+}
+
+.nx-itinerary-day-head {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 10px;
+}
+
+.nx-itinerary-steps {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-bottom: 10px;
+}
+
+.nx-itinerary-step {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.nx-step-time {
+	width: 110px;
+	flex: none;
+}
+
+.nx-step-title {
+	width: 200px;
+	flex: none;
+}
+
+.nx-step-text {
+	flex: 1;
+}
+
+.nx-add-day {
+	margin-top: 6px;
+}
