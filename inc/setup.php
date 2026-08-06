@@ -49,10 +49,16 @@ function nefertari_enqueue_assets() {
 	wp_enqueue_script( 'nefertari-main', NEFERTARI_URI . '/assets/js/main.js', array(), NEFERTARI_VERSION, true );
 
 	if ( nefertari_booking_plugin_active() ) {
-		wp_enqueue_script( 'nefertari-booking', NEFERTARI_URI . '/assets/js/booking.js', array(), NEFERTARI_VERSION, true );
+		// Unique handle: the plugin registers its own legacy widget script under
+		// the handle "nefertari-booking" for its [nefertari_booking_widget]
+		// shortcode. Reusing that handle here would lose the src race — WP
+		// keeps whichever registration for a handle happened first (the
+		// plugin's, since plugins load before the theme) and silently ignores
+		// this one, so the theme's booking modal JS would never load.
+		wp_enqueue_script( 'nefertari-theme-booking', NEFERTARI_URI . '/assets/js/booking.js', array(), NEFERTARI_VERSION, true );
 
 		$user = wp_get_current_user();
-		wp_localize_script( 'nefertari-booking', 'nefertariBooking', array(
+		wp_localize_script( 'nefertari-theme-booking', 'nefertariBooking', array(
 			'restUrl'     => esc_url_raw( rest_url( 'nefertari/v1' ) ),
 			'nonce'       => wp_create_nonce( 'wp_rest' ),
 			'whatsapp'    => nefertari_whatsapp_number(),
