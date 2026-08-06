@@ -45,82 +45,111 @@ $is_logged_in = is_user_logged_in();
 
 			<!-- DETAILS -->
 			<div class="nx-step-view<?php echo $is_logged_in ? ' is-active' : ''; ?>" data-step-view="details">
-				<label class="nx-field-label" for="nx-trip-select">Excursion</label>
-				<select class="nx-input" id="nx-trip-select">
-					<option value="">Select an excursion…</option>
-					<?php foreach ( $excursions->posts as $ex ) : ?>
-						<option value="<?php echo esc_attr( $ex->ID ); ?>">
-							<?php echo esc_html( get_the_title( $ex ) . ' — from ' . nefertari_excursion_price( $ex->ID ) ); ?>
-						</option>
-					<?php endforeach; ?>
-				</select>
 
-				<label class="nx-field-label" for="nx-slot-select">Departure</label>
-				<select class="nx-input" id="nx-slot-select" disabled>
-					<option value="">Select an excursion first…</option>
-				</select>
+				<div class="nx-progress-track">
+					<div class="nx-progress-step" data-progress-step="trip">
+						<span class="nx-progress-dot">1</span><span class="nx-progress-label">Trip</span>
+					</div>
+					<div class="nx-progress-step" data-progress-step="travelers">
+						<span class="nx-progress-dot">2</span><span class="nx-progress-label">Travelers</span>
+					</div>
+					<div class="nx-progress-step" data-progress-step="contact">
+						<span class="nx-progress-dot">3</span><span class="nx-progress-label">Contact &amp; pay</span>
+					</div>
+				</div>
 
-				<div style="display:flex;flex-direction:column;gap:11px;margin-bottom:18px">
-					<div class="nx-counter-row">
-						<div><div class="nx-counter-label">Adults</div><div class="nx-counter-sub">Age 12+</div></div>
-						<div class="nx-counter-controls">
-							<button type="button" class="nx-counter-btn" data-counter="adults" data-dir="-1">−</button>
-							<span class="nx-counter-value" id="nx-adults-value">2</span>
-							<button type="button" class="nx-counter-btn" data-counter="adults" data-dir="1">+</button>
+				<!-- SUB-STEP: trip & guests -->
+				<div class="nx-sub-step" data-sub-step="trip">
+					<label class="nx-field-label" for="nx-trip-select">Excursion</label>
+					<select class="nx-input" id="nx-trip-select">
+						<option value="">Select an excursion…</option>
+						<?php foreach ( $excursions->posts as $ex ) : ?>
+							<option value="<?php echo esc_attr( $ex->ID ); ?>">
+								<?php echo esc_html( get_the_title( $ex ) . ' — from ' . nefertari_excursion_price( $ex->ID ) ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+
+					<label class="nx-field-label" for="nx-slot-select">Departure</label>
+					<select class="nx-input" id="nx-slot-select" disabled>
+						<option value="">Select an excursion first…</option>
+					</select>
+
+					<div style="display:flex;flex-direction:column;gap:11px;margin-bottom:22px">
+						<div class="nx-counter-row">
+							<div><div class="nx-counter-label">Adults</div><div class="nx-counter-sub">Age 12+</div></div>
+							<div class="nx-counter-controls">
+								<button type="button" class="nx-counter-btn" data-counter="adults" data-dir="-1">−</button>
+								<span class="nx-counter-value" id="nx-adults-value">2</span>
+								<button type="button" class="nx-counter-btn" data-counter="adults" data-dir="1">+</button>
+							</div>
+						</div>
+						<div class="nx-counter-row">
+							<div><div class="nx-counter-label">Children</div><div class="nx-counter-sub">Half price, exact age set below</div></div>
+							<div class="nx-counter-controls">
+								<button type="button" class="nx-counter-btn" data-counter="children" data-dir="-1">−</button>
+								<span class="nx-counter-value" id="nx-children-value">0</span>
+								<button type="button" class="nx-counter-btn" data-counter="children" data-dir="1">+</button>
+							</div>
 						</div>
 					</div>
-					<div class="nx-counter-row">
-						<div><div class="nx-counter-label">Children</div><div class="nx-counter-sub">Half price, exact age set below</div></div>
-						<div class="nx-counter-controls">
-							<button type="button" class="nx-counter-btn" data-counter="children" data-dir="-1">−</button>
-							<span class="nx-counter-value" id="nx-children-value">0</span>
-							<button type="button" class="nx-counter-btn" data-counter="children" data-dir="1">+</button>
+
+					<button type="button" class="nx-btn nx-btn--primary nx-btn--block" id="nx-trip-next" data-next-step disabled>Continue</button>
+				</div>
+
+				<!-- SUB-STEP: travelers -->
+				<div class="nx-sub-step" data-sub-step="travelers">
+					<button type="button" class="nx-modal-back" data-prev-step>← Back</button>
+					<p class="nx-substep-hint">Passport details for each traveler — needed for your booking confirmation and check-in.</p>
+					<div id="nx-passenger-forms"></div>
+					<button type="button" class="nx-btn nx-btn--primary nx-btn--block" id="nx-travelers-next" data-next-step disabled>Continue</button>
+				</div>
+
+				<!-- SUB-STEP: contact & pay -->
+				<div class="nx-sub-step" data-sub-step="contact">
+					<button type="button" class="nx-modal-back" data-prev-step>← Back</button>
+
+					<label class="nx-field-label" for="nx-contact-name">Full name</label>
+					<input type="text" id="nx-contact-name" class="nx-input" placeholder="e.g. Sarah Müller">
+
+					<label class="nx-field-label" for="nx-contact-phone">Phone (with country code)</label>
+					<input type="text" id="nx-contact-phone" class="nx-input" placeholder="+49 …">
+
+					<label class="nx-field-label" for="nx-contact-country">Country of residence</label>
+					<input type="text" id="nx-contact-country" class="nx-input">
+
+					<div style="display:flex;gap:12px">
+						<div style="flex:1">
+							<label class="nx-field-label" for="nx-contact-hotel">Hotel</label>
+							<input type="text" id="nx-contact-hotel" class="nx-input">
+						</div>
+						<div style="flex:1">
+							<label class="nx-field-label" for="nx-contact-room">Room number</label>
+							<input type="text" id="nx-contact-room" class="nx-input">
 						</div>
 					</div>
-				</div>
 
-				<div id="nx-passenger-forms"></div>
+					<label class="nx-field-label" for="nx-contact-pickup">Pickup location</label>
+					<input type="text" id="nx-contact-pickup" class="nx-input" placeholder="Hotel name or marina">
 
-				<label class="nx-field-label" for="nx-contact-name">Full name</label>
-				<input type="text" id="nx-contact-name" class="nx-input" placeholder="e.g. Sarah Müller">
+					<label class="nx-field-label" for="nx-contact-notes">Special requests</label>
+					<textarea id="nx-contact-notes" class="nx-input" rows="2"></textarea>
 
-				<label class="nx-field-label" for="nx-contact-phone">Phone (with country code)</label>
-				<input type="text" id="nx-contact-phone" class="nx-input" placeholder="+49 …">
+					<label class="nx-toggle" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;font-weight:500;color:var(--nx-ink-soft);margin-bottom:18px">
+						<input type="checkbox" id="nx-terms" style="margin-top:3px"> I accept the terms, privacy policy, and cancellation policy.
+					</label>
 
-				<label class="nx-field-label" for="nx-contact-country">Country of residence</label>
-				<input type="text" id="nx-contact-country" class="nx-input">
-
-				<div style="display:flex;gap:12px">
-					<div style="flex:1">
-						<label class="nx-field-label" for="nx-contact-hotel">Hotel</label>
-						<input type="text" id="nx-contact-hotel" class="nx-input">
+					<div class="nx-total-row">
+						<div>
+							<div class="nx-total-label">Estimated total</div>
+							<div class="nx-total-sub" id="nx-total-breakdown">Select an excursion and departure</div>
+						</div>
+						<div class="nx-total-value" id="nx-total-value">—</div>
 					</div>
-					<div style="flex:1">
-						<label class="nx-field-label" for="nx-contact-room">Room number</label>
-						<input type="text" id="nx-contact-room" class="nx-input">
-					</div>
+
+					<button type="button" class="nx-btn nx-btn--primary nx-btn--block" id="nx-pay-btn" disabled>🔒 Pay securely — <span id="nx-pay-cta-total">—</span></button>
+					<p class="nx-note" id="nx-form-message"></p>
 				</div>
-
-				<label class="nx-field-label" for="nx-contact-pickup">Pickup location</label>
-				<input type="text" id="nx-contact-pickup" class="nx-input" placeholder="Hotel name or marina">
-
-				<label class="nx-field-label" for="nx-contact-notes">Special requests</label>
-				<textarea id="nx-contact-notes" class="nx-input" rows="2"></textarea>
-
-				<label class="nx-toggle" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;font-weight:500;color:var(--nx-ink-soft);margin-bottom:18px">
-					<input type="checkbox" id="nx-terms" style="margin-top:3px"> I accept the terms, privacy policy, and cancellation policy.
-				</label>
-
-				<div class="nx-total-row">
-					<div>
-						<div class="nx-total-label">Estimated total</div>
-						<div class="nx-total-sub" id="nx-total-breakdown">Select an excursion and departure</div>
-					</div>
-					<div class="nx-total-value" id="nx-total-value">—</div>
-				</div>
-
-				<button type="button" class="nx-btn nx-btn--primary nx-btn--block" id="nx-pay-btn" disabled>🔒 Pay securely — <span id="nx-pay-cta-total">—</span></button>
-				<p class="nx-note" id="nx-form-message"></p>
 			</div>
 
 			<!-- REDIRECTING -->

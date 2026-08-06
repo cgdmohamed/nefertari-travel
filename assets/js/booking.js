@@ -71,6 +71,8 @@
 		formMessage: document.getElementById( 'nx-form-message' ),
 		gateLogin: document.getElementById( 'nx-gate-login' ),
 		gateRegister: document.getElementById( 'nx-gate-register' ),
+		tripNext: document.getElementById( 'nx-trip-next' ),
+		travelersNext: document.getElementById( 'nx-travelers-next' ),
 	};
 
 	var state = { adults: 2, children: 0, lastPrice: null };
@@ -100,27 +102,98 @@
 		} );
 	}
 
+	/* Sub-steps (trip -> travelers -> contact, within the "details" step) -------*/
+
+	var subSteps = [ 'trip', 'travelers', 'contact' ];
+
+	function showSubStep( name ) {
+		modal.querySelectorAll( '[data-sub-step]' ).forEach( function ( view ) {
+			view.classList.toggle( 'is-active', view.getAttribute( 'data-sub-step' ) === name );
+		} );
+		var currentIndex = subSteps.indexOf( name );
+		modal.querySelectorAll( '[data-progress-step]' ).forEach( function ( step ) {
+			var stepIndex = subSteps.indexOf( step.getAttribute( 'data-progress-step' ) );
+			step.classList.toggle( 'is-active', stepIndex === currentIndex );
+			step.classList.toggle( 'is-done', stepIndex < currentIndex );
+		} );
+		modal.querySelector( '.nx-modal-body' ).scrollTop = 0;
+	}
+
+	modal.querySelectorAll( '[data-next-step]' ).forEach( function ( btn ) {
+		btn.addEventListener( 'click', function () {
+			var current = btn.closest( '[data-sub-step]' ).getAttribute( 'data-sub-step' );
+			var next = subSteps[ subSteps.indexOf( current ) + 1 ];
+			if ( next ) {
+				showSubStep( next );
+			}
+		} );
+	} );
+
+	modal.querySelectorAll( '[data-prev-step]' ).forEach( function ( btn ) {
+		btn.addEventListener( 'click', function () {
+			var current = btn.closest( '[data-sub-step]' ).getAttribute( 'data-sub-step' );
+			var prev = subSteps[ subSteps.indexOf( current ) - 1 ];
+			if ( prev ) {
+				showSubStep( prev );
+			}
+		} );
+	} );
+
 	/* Passenger forms -----------------------------------------------------------*/
+
+	var PASSENGER_REQUIRED_FIELDS = [ 'first_name', 'last_name', 'nationality', 'date_of_birth', 'passport_number' ];
 
 	function passengerGroup( type, index ) {
 		var label = ( 'adult' === type ? 'Adult ' : 'Child ' ) + ( index + 1 );
 		var wrap = document.createElement( 'div' );
 		wrap.className = 'nx-passenger-group';
 		wrap.setAttribute( 'data-passenger-type', type );
-		wrap.style.cssText = 'border:1px solid var(--nx-border-2);border-radius:14px;padding:16px;margin-bottom:12px';
 		wrap.innerHTML =
-			'<div style="font-weight:700;margin-bottom:10px">' + label + '</div>' +
-			'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
-			'<input class="nx-input" style="margin-bottom:0" data-field="first_name" placeholder="First name">' +
-			'<input class="nx-input" style="margin-bottom:0" data-field="last_name" placeholder="Last name">' +
-			'<input class="nx-input" style="margin-bottom:0" data-field="nationality" placeholder="Nationality">' +
-			'<input class="nx-input" style="margin-bottom:0" data-field="date_of_birth" type="date" placeholder="Date of birth">' +
-			'<input class="nx-input" style="margin-bottom:0" data-field="passport_number" placeholder="Passport number">' +
-			'<input class="nx-input" style="margin-bottom:0" data-field="passport_expiry" type="date" placeholder="Passport expiry">' +
+			'<button type="button" class="nx-passenger-summary" data-toggle-passenger>' +
+			'<span class="nx-passenger-summary-title">' + label + '</span>' +
+			'<span class="nx-passenger-summary-status" data-passenger-status>Tap to fill in</span>' +
+			'<span class="nx-passenger-chevron">›</span>' +
+			'</button>' +
+			'<div class="nx-passenger-fields">' +
+			'<div class="nx-passenger-fields-grid">' +
+			'<input class="nx-input" data-field="first_name" placeholder="First name">' +
+			'<input class="nx-input" data-field="last_name" placeholder="Last name">' +
+			'<input class="nx-input" data-field="nationality" placeholder="Nationality">' +
+			'<input class="nx-input" data-field="date_of_birth" type="date" placeholder="Date of birth">' +
+			'<input class="nx-input" data-field="passport_number" placeholder="Passport number">' +
+			'<input class="nx-input" data-field="passport_expiry" type="date" placeholder="Passport expiry">' +
 			'</div>' +
-			'<select class="nx-input" style="margin-bottom:0" data-field="gender"><option value="">Gender</option><option value="female">Female</option><option value="male">Male</option><option value="prefer_not_to_say">Prefer not to say</option></select>';
+			'<select class="nx-input" data-field="gender"><option value="">Gender</option><option value="female">Female</option><option value="male">Male</option><option value="prefer_not_to_say">Prefer not to say</option></select>' +
+			'</div>';
 		return wrap;
 	}
+
+	function passengerComplete( group ) {
+		var data = {};
+		group.querySelectorAll( '[data-field]' ).forEach( function ( input ) {
+			data[ input.getAttribute( 'data-field' ) ] = input.value;
+		} );
+		return PASSENGER_REQUIRED_FIELDS.every( function ( field ) {
+			return data[ field ] && '' !== data[ field ].trim();
+		} );
+	}
+
+	function updatePassengerStatuses() {
+		els.passengerForms.querySelectorAll( '.nx-passenger-group' ).forEach( function ( group ) {
+			var complete = passengerComplete( group );
+			group.classList.toggle( 'is-complete', complete );
+			group.querySelector( '[data-passenger-status]' ).textContent = complete ? 'Complete ✓' : 'Tap to fill in';
+		} );
+		els.travelersNext.disabled = ! passengersComplete();
+	}
+
+	els.passengerForms.addEventListener( 'click', function ( e ) {
+		var toggle = e.target.closest( '[data-toggle-passenger]' );
+		if ( ! toggle ) {
+			return;
+		}
+		toggle.closest( '.nx-passenger-group' ).classList.toggle( 'is-expanded' );
+	} );
 
 	function renderPassengerForms() {
 		var existing = {};
@@ -149,6 +222,15 @@
 			}
 			els.passengerForms.appendChild( group );
 		}
+
+		updatePassengerStatuses();
+		var groups = els.passengerForms.querySelectorAll( '.nx-passenger-group' );
+		var firstIncomplete = Array.prototype.filter.call( groups, function ( group ) {
+			return ! group.classList.contains( 'is-complete' );
+		} )[ 0 ];
+		if ( firstIncomplete ) {
+			firstIncomplete.classList.add( 'is-expanded' );
+		}
 	}
 
 	function collectPassengers() {
@@ -164,9 +246,8 @@
 	}
 
 	function passengersComplete() {
-		var required = [ 'first_name', 'last_name', 'nationality', 'date_of_birth', 'passport_number' ];
 		return collectPassengers().every( function ( passenger ) {
-			return required.every( function ( field ) {
+			return PASSENGER_REQUIRED_FIELDS.every( function ( field ) {
 				return passenger[ field ] && '' !== passenger[ field ].trim();
 			} );
 		} );
@@ -187,6 +268,12 @@
 		validateForm();
 	}
 
+	/* Trip/guests step gating ----------------------------------------------------*/
+
+	function updateTripNextState() {
+		els.tripNext.disabled = ! ( els.tripSelect.value && els.slotSelect.value && state.lastPrice );
+	}
+
 	modal.querySelectorAll( '[data-counter]' ).forEach( function ( btn ) {
 		btn.addEventListener( 'click', function () {
 			setCounter( btn.getAttribute( 'data-counter' ), parseInt( btn.getAttribute( 'data-dir' ), 10 ) );
@@ -200,6 +287,7 @@
 		els.slotSelect.disabled = true;
 		recalcPrice();
 		validateForm();
+		updateTripNextState();
 
 		var excursionId = els.tripSelect.value;
 		if ( ! excursionId ) {
@@ -229,6 +317,7 @@
 	els.slotSelect.addEventListener( 'change', function () {
 		recalcPrice();
 		validateForm();
+		updateTripNextState();
 	} );
 
 	/* Pricing -------------------------------------------------------------------*/
@@ -254,9 +343,11 @@
 				els.totalBreakdown.textContent = parts.join( '   +   ' );
 				els.totalValue.textContent = '$' + price.total_usd.toFixed( 2 );
 				els.payCtaTotal.textContent = '$' + price.total_usd.toFixed( 2 );
+				updateTripNextState();
 			} )
 			.catch( function () {
 				els.totalBreakdown.textContent = 'Couldn’t calculate price';
+				updateTripNextState();
 			} );
 	}
 
@@ -267,6 +358,7 @@
 	els.passengerForms.addEventListener( 'input', function () {
 		recalcPrice();
 		validateForm();
+		updatePassengerStatuses();
 	} );
 
 	/* Validation --------------------------------------------------------------*/
@@ -346,6 +438,7 @@
 				els.tripSelect.dispatchEvent( new Event( 'change' ) );
 			}
 			showStep( 'details' );
+			showSubStep( 'trip' );
 		}
 		modal.classList.add( 'is-open' );
 		document.body.style.overflow = 'hidden';

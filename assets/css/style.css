@@ -84,7 +84,9 @@ button{ font-family:inherit; }
 .nx-btn--outline:hover{ background:var(--nx-cream); }
 .nx-btn--green{ background:var(--nx-green); color:#fff; box-shadow:0 12px 26px rgba(31,138,91,0.3); }
 .nx-btn--green:hover{ filter:brightness(1.06); }
-.nx-btn--disabled{ background:#E7DCD0; color:#A8978C; cursor:default; }
+.nx-btn--disabled,
+.nx-btn:disabled{ background:#E7DCD0; color:#A8978C; cursor:default; box-shadow:none; }
+.nx-btn:disabled:hover{ transform:none; }
 .nx-btn--block{ width:100%; padding:16px; font-size:16.5px; }
 .nx-btn--sm{ padding:12px 22px; font-size:14px; }
 
@@ -506,6 +508,41 @@ select.nx-input{ cursor:pointer; }
 
 .nx-step-view{ display:none; }
 .nx-step-view.is-active{ display:block; }
+
+.nx-sub-step{ display:none; }
+.nx-sub-step.is-active{ display:block; }
+
+.nx-progress-track{ display:flex; align-items:flex-start; margin-bottom:24px; }
+.nx-progress-step{ flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; position:relative; }
+.nx-progress-step::before{ content:''; position:absolute; top:14px; left:-50%; width:100%; height:2px; background:var(--nx-border-2); z-index:0; }
+.nx-progress-step:first-child::before{ display:none; }
+.nx-progress-dot{
+  width:28px; height:28px; border-radius:50%; background:#fff; border:2px solid var(--nx-border-2); color:var(--nx-brown);
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; position:relative; z-index:1;
+}
+.nx-progress-label{ font-size:11.5px; font-weight:600; color:var(--nx-brown); text-align:center; }
+.nx-progress-step.is-active .nx-progress-dot{ background:var(--nx-pink); border-color:var(--nx-pink); color:#fff; }
+.nx-progress-step.is-active .nx-progress-label{ color:var(--nx-ink); }
+.nx-progress-step.is-done .nx-progress-dot{ background:var(--nx-gold); border-color:var(--nx-gold); color:#fff; }
+.nx-progress-step.is-done::before{ background:var(--nx-gold); }
+
+.nx-substep-hint{ font-size:13px; color:var(--nx-brown); margin:-4px 0 16px; }
+
+.nx-passenger-group{ border:1px solid var(--nx-border-2); border-radius:14px; margin-bottom:12px; overflow:hidden; }
+.nx-passenger-summary{
+  width:100%; display:flex; align-items:center; gap:10px; padding:14px 16px; background:#fff; border:none; cursor:pointer;
+  font-family:var(--nx-font-body); text-align:left;
+}
+.nx-passenger-summary-title{ font-weight:700; font-size:14.5px; }
+.nx-passenger-summary-status{ flex:1; text-align:right; font-size:12.5px; color:#9A8078; }
+.nx-passenger-group.is-complete .nx-passenger-summary-status{ color:var(--nx-pink); font-weight:600; }
+.nx-passenger-chevron{ font-size:16px; color:var(--nx-brown); transition:transform 0.15s ease; }
+.nx-passenger-group.is-expanded .nx-passenger-chevron{ transform:rotate(90deg); }
+.nx-passenger-fields{ display:none; padding:0 16px 16px; }
+.nx-passenger-group.is-expanded .nx-passenger-fields{ display:block; }
+.nx-passenger-fields-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+.nx-passenger-fields .nx-input{ margin-bottom:0; }
+.nx-passenger-fields select.nx-input{ margin-top:10px; }
 
 .nx-processing{ padding:48px 0; display:flex; flex-direction:column; align-items:center; gap:22px; }
 .nx-spinner{ width:54px; height:54px; border-radius:50%; border:5px solid var(--nx-border); border-top-color:var(--nx-pink); animation:nx-spin 0.8s linear infinite; }
