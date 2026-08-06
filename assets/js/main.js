@@ -21,8 +21,12 @@
 		pagination: multiSlide ? { el: '.swiper-pagination', clickable: true } : false,
 		navigation: multiSlide ? { nextEl: '.nx-gallery-nav--next', prevEl: '.nx-gallery-nav--prev' } : false,
 		on: {
+			// Swiper calls this during its own construction (synchronously,
+			// as part of `new Swiper(...)`), before the assignment to the
+			// `swiper` variable below has happened — so `this` (which Swiper
+			// binds to the instance) must be used instead of that variable.
 			slideChange: function () {
-				var active = swiper.realIndex;
+				var active = this.realIndex;
 				thumbs.forEach( function ( thumb, i ) {
 					thumb.classList.toggle( 'is-active', i === active );
 				} );
