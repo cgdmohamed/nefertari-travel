@@ -46,7 +46,13 @@ function nefertari_enqueue_assets() {
 
 	wp_enqueue_style( 'nefertari-style', NEFERTARI_URI . '/assets/css/style.css', array(), NEFERTARI_VERSION );
 
-	wp_enqueue_script( 'nefertari-main', NEFERTARI_URI . '/assets/js/main.js', array(), NEFERTARI_VERSION, true );
+	$main_deps = array();
+	if ( is_singular( 'excursion' ) ) {
+		wp_enqueue_style( 'swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css', array(), '11' );
+		wp_enqueue_script( 'swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js', array(), '11', true );
+		$main_deps[] = 'swiper';
+	}
+	wp_enqueue_script( 'nefertari-main', NEFERTARI_URI . '/assets/js/main.js', $main_deps, NEFERTARI_VERSION, true );
 
 	if ( nefertari_booking_plugin_active() ) {
 		// Unique handle: the plugin registers its own legacy widget script under

@@ -73,6 +73,8 @@
 		gateRegister: document.getElementById( 'nx-gate-register' ),
 		tripNext: document.getElementById( 'nx-trip-next' ),
 		travelersNext: document.getElementById( 'nx-travelers-next' ),
+		tripField: document.getElementById( 'nx-trip-field' ),
+		tripLockedName: document.getElementById( 'nx-trip-locked-name' ),
 	};
 
 	var state = { adults: 2, children: 0, lastPrice: null };
@@ -274,6 +276,22 @@
 		els.tripNext.disabled = ! ( els.tripSelect.value && els.slotSelect.value && state.lastPrice );
 	}
 
+	/* Locking the excursion picker when booking is opened from an excursion's
+	 * own page — the visitor already told us which trip they want, so making
+	 * them pick it again from a dropdown is an unnecessary extra step. */
+
+	function lockTripSelection( tripId ) {
+		var option = els.tripSelect.querySelector( 'option[value="' + tripId + '"]' );
+		els.tripLockedName.textContent = option ? option.textContent.trim() : '';
+		els.tripField.classList.add( 'is-locked' );
+	}
+
+	function unlockTripSelection() {
+		els.tripField.classList.remove( 'is-locked' );
+	}
+
+	els.tripField.querySelector( '[data-unlock-trip]' ).addEventListener( 'click', unlockTripSelection );
+
 	modal.querySelectorAll( '[data-counter]' ).forEach( function ( btn ) {
 		btn.addEventListener( 'click', function () {
 			setCounter( btn.getAttribute( 'data-counter' ), parseInt( btn.getAttribute( 'data-dir' ), 10 ) );
@@ -436,6 +454,9 @@
 			if ( tripId ) {
 				els.tripSelect.value = String( tripId );
 				els.tripSelect.dispatchEvent( new Event( 'change' ) );
+				lockTripSelection( tripId );
+			} else {
+				unlockTripSelection();
 			}
 			showStep( 'details' );
 			showSubStep( 'trip' );

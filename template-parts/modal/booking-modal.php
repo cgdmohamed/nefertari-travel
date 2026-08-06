@@ -60,15 +60,26 @@ $is_logged_in = is_user_logged_in();
 
 				<!-- SUB-STEP: trip & guests -->
 				<div class="nx-sub-step" data-sub-step="trip">
-					<label class="nx-field-label" for="nx-trip-select">Excursion</label>
-					<select class="nx-input" id="nx-trip-select">
-						<option value="">Select an excursion…</option>
-						<?php foreach ( $excursions->posts as $ex ) : ?>
-							<option value="<?php echo esc_attr( $ex->ID ); ?>">
-								<?php echo esc_html( get_the_title( $ex ) . ' — from ' . nefertari_excursion_price( $ex->ID ) ); ?>
-							</option>
-						<?php endforeach; ?>
-					</select>
+					<div class="nx-trip-field" id="nx-trip-field">
+						<div class="nx-trip-picker">
+							<label class="nx-field-label" for="nx-trip-select">Excursion</label>
+							<select class="nx-input" id="nx-trip-select">
+								<option value="">Select an excursion…</option>
+								<?php foreach ( $excursions->posts as $ex ) : ?>
+									<option value="<?php echo esc_attr( $ex->ID ); ?>">
+										<?php echo esc_html( get_the_title( $ex ) . ' — from ' . nefertari_excursion_price( $ex->ID ) ); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+						<div class="nx-trip-locked">
+							<div class="nx-field-label">Excursion</div>
+							<div class="nx-trip-locked-row">
+								<span class="nx-trip-locked-name" id="nx-trip-locked-name"></span>
+								<button type="button" class="nx-trip-change-btn" data-unlock-trip>Change</button>
+							</div>
+						</div>
+					</div>
 
 					<label class="nx-field-label" for="nx-slot-select">Departure</label>
 					<select class="nx-input" id="nx-slot-select" disabled>

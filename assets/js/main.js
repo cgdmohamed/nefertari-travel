@@ -1,25 +1,38 @@
 /**
- * Site-wide interactions outside the booking modal: excursion gallery
- * thumbnail switching. Nav scrolling and the itinerary accordion are plain
- * anchors / <details> elements and need no JS.
+ * Site-wide interactions outside the booking modal: the excursion gallery
+ * (an auto-sliding Swiper, synced to the thumbnail strip below it). Nav
+ * scrolling and the itinerary accordion are plain anchors / <details>
+ * elements and need no JS.
  */
 ( function () {
 	'use strict';
 
-	var mainImg = document.querySelector( '.nx-gallery-main img' );
-	var thumbs = document.querySelectorAll( '.nx-thumb' );
-
-	if ( ! mainImg || ! thumbs.length ) {
+	var el = document.getElementById( 'nx-gallery-swiper' );
+	if ( ! el || 'undefined' === typeof Swiper ) {
 		return;
 	}
 
-	thumbs.forEach( function ( thumb ) {
+	var thumbs = document.querySelectorAll( '.nx-thumb' );
+	var multiSlide = thumbs.length > 1;
+
+	var swiper = new Swiper( el, {
+		loop: multiSlide,
+		autoplay: multiSlide ? { delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true } : false,
+		pagination: multiSlide ? { el: '.swiper-pagination', clickable: true } : false,
+		navigation: multiSlide ? { nextEl: '.nx-gallery-nav--next', prevEl: '.nx-gallery-nav--prev' } : false,
+		on: {
+			slideChange: function () {
+				var active = swiper.realIndex;
+				thumbs.forEach( function ( thumb, i ) {
+					thumb.classList.toggle( 'is-active', i === active );
+				} );
+			},
+		},
+	} );
+
+	thumbs.forEach( function ( thumb, i ) {
 		thumb.addEventListener( 'click', function () {
-			mainImg.setAttribute( 'src', thumb.getAttribute( 'src' ) );
-			thumbs.forEach( function ( t ) {
-				t.classList.remove( 'is-active' );
-			} );
-			thumb.classList.add( 'is-active' );
+			swiper.slideToLoop( i );
 		} );
 	} );
 } )();
