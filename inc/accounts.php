@@ -38,6 +38,22 @@ function nefertari_seed_account_pages() {
 add_action( 'after_switch_theme', 'nefertari_seed_account_pages' );
 
 /**
+ * Self-heals sites where the theme was already active before this feature
+ * existed — `after_switch_theme` never fires again for them, so without
+ * this the account pages would simply never get created. Runs the (cheap,
+ * idempotent) seed check once per site via an option flag, not on every
+ * request.
+ */
+function nefertari_maybe_seed_account_pages() {
+	if ( get_option( 'nefertari_account_pages_seeded' ) ) {
+		return;
+	}
+	nefertari_seed_account_pages();
+	update_option( 'nefertari_account_pages_seeded', '1' );
+}
+add_action( 'admin_init', 'nefertari_maybe_seed_account_pages' );
+
+/**
  * URL for one of the account pages, falling back to home if it's somehow
  * missing (e.g. deleted after activation).
  */
