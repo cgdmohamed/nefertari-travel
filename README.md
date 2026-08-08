@@ -53,16 +53,23 @@ code editing required:
 
 ## Booking flow
 
-The booking modal is a real, account-gated flow against the plugin's REST
-API (`nefertari/v1`): select an excursion → real departure slot (with live
-remaining capacity) → passenger/passport details for each guest → contact
-details → a live price from the plugin's `Pricing_Service` → redirect to a
-real Kashier checkout. Logged-out visitors see a login/register prompt
-instead of the form (the plugin has no guest checkout). After payment,
-Kashier redirects to the theme's Payment Result page, which polls the
-plugin's booking-status endpoint for the real outcome (the redirect itself
-proves nothing — the webhook is the source of truth and can land a moment
-later).
+The booking modal is a real, account-gated, three-step wizard (Trip →
+Travelers → Contact & pay) against the plugin's REST API (`nefertari/v1`):
+excursion (auto-locked to the excursion you booked from) → real departure
+slot (with live remaining capacity) → passenger/passport details for each
+guest → contact details → a live price from the plugin's `Pricing_Service`
+→ redirect to checkout. Logged-out visitors see a login/register prompt
+instead of the form (the plugin has no guest checkout).
+
+Two payment methods, both real: **Kashier** (card, always on) and
+**PayPal** (optional — a "Card / PayPal" choice only appears once the
+plugin's Settings → PayPal Settings has it enabled). Whichever the
+customer picks, they land on the theme's Payment Result page afterward,
+which polls the plugin's booking-status endpoint for the real outcome —
+for Kashier the redirect proves nothing (its webhook is the source of
+truth and can land a moment later); for PayPal that page also fires the
+capture call first (a PayPal order isn't paid until captured), then polls
+the same way.
 
 ## Structure
 

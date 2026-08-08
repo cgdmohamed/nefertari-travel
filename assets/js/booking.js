@@ -75,9 +75,21 @@
 		travelersNext: document.getElementById( 'nx-travelers-next' ),
 		tripField: document.getElementById( 'nx-trip-field' ),
 		tripLockedName: document.getElementById( 'nx-trip-locked-name' ),
+		paymentMethods: document.getElementById( 'nx-payment-methods' ),
 	};
 
-	var state = { adults: 2, children: 0, lastPrice: null };
+	var state = { adults: 2, children: 0, lastPrice: null, paymentMethod: 'kashier' };
+
+	if ( els.paymentMethods ) {
+		els.paymentMethods.querySelectorAll( 'input[name="nx-payment-method"]' ).forEach( function ( input ) {
+			input.addEventListener( 'change', function () {
+				state.paymentMethod = input.value;
+				els.paymentMethods.querySelectorAll( '.nx-payment-method' ).forEach( function ( label ) {
+					label.classList.toggle( 'is-active', label.querySelector( 'input' ).checked );
+				} );
+			} );
+		} );
+	}
 
 	/* API helper --------------------------------------------------------------*/
 
@@ -407,6 +419,7 @@
 		var payload = {
 			excursion_id: Number( els.tripSelect.value ),
 			slot_id: Number( els.slotSelect.value ),
+			payment_method: state.paymentMethod,
 			passengers: collectPassengers(),
 			contact: {
 				full_name: els.contactName.value,

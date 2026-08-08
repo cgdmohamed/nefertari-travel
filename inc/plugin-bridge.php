@@ -18,6 +18,18 @@ function nefertari_booking_plugin_active() {
 	return class_exists( '\Nefertari\Booking\Plugin' );
 }
 
+/**
+ * Whether the plugin has PayPal turned on (Settings > PayPal Settings). The
+ * theme has no other visibility into plugin settings, so this is the one
+ * bridge point the booking modal's payment-method choice depends on.
+ */
+function nefertari_paypal_enabled() {
+	if ( ! nefertari_booking_plugin_active() || ! class_exists( '\Nefertari\Booking\Settings\Settings' ) ) {
+		return false;
+	}
+	return (bool) ( new \Nefertari\Booking\Settings\Settings() )->get( 'paypal_enabled' );
+}
+
 function nefertari_booking_plugin_notice() {
 	if ( nefertari_booking_plugin_active() || ! current_user_can( 'activate_plugins' ) ) {
 		return;

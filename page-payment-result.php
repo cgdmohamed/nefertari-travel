@@ -13,14 +13,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 get_header();
 
 $booking_ref = isset( $_GET['booking_ref'] ) ? sanitize_text_field( wp_unslash( $_GET['booking_ref'] ) ) : '';
+// PayPal's standard return param for the order ID it's redirecting back
+// with — present only when the customer paid via PayPal, not Kashier.
+$paypal_order_id = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
 
 if ( nefertari_booking_plugin_active() ) {
 	wp_enqueue_script( 'nefertari-payment-result', NEFERTARI_URI . '/assets/js/payment-result.js', array(), NEFERTARI_VERSION, true );
 	wp_localize_script( 'nefertari-payment-result', 'nefertariPaymentResult', array(
-		'restUrl'    => esc_url_raw( rest_url( 'nefertari/v1' ) ),
-		'nonce'      => wp_create_nonce( 'wp_rest' ),
-		'bookingRef' => $booking_ref,
-		'accountUrl' => nefertari_account_url( 'account' ),
+		'restUrl'       => esc_url_raw( rest_url( 'nefertari/v1' ) ),
+		'nonce'         => wp_create_nonce( 'wp_rest' ),
+		'bookingRef'    => $booking_ref,
+		'paypalOrderId' => $paypal_order_id,
+		'accountUrl'    => nefertari_account_url( 'account' ),
 	) );
 }
 ?>

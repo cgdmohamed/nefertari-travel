@@ -1,7 +1,10 @@
 /**
- * Polls the plugin's booking-status endpoint after a Kashier redirect.
- * The redirect itself proves nothing — the webhook is the source of truth
- * and may land a moment after the customer lands back on this page.
+ * Polls the plugin's booking-status endpoint after a payment redirect. For
+ * Kashier, the redirect itself proves nothing — the webhook is the source
+ * of truth and may land a moment after the customer arrives here. PayPal
+ * is the opposite: an order isn't paid until explicitly captured, which
+ * hasn't happened yet at this point, so that capture call fires first
+ * (below) and the polling loop is what picks up its result.
  */
 ( function () {
 	'use strict';
@@ -73,5 +76,13 @@
 			} );
 	}
 
-	check();
+	if ( cfg.paypalOrderId ) {
+		fetch( cfg.restUrl + '/paypal/capture', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': cfg.nonce },
+			body: JSON.stringify( { order_id: cfg.paypalOrderId } ),
+		} ).finally( check );
+	} else {
+		check();
+	}
 } )();

@@ -158,6 +158,17 @@ $is_logged_in = is_user_logged_in();
 						<div class="nx-total-value" id="nx-total-value">—</div>
 					</div>
 
+					<?php if ( nefertari_paypal_enabled() ) : ?>
+						<div class="nx-payment-methods" id="nx-payment-methods">
+							<label class="nx-payment-method is-active">
+								<input type="radio" name="nx-payment-method" value="kashier" checked> 💳 Card
+							</label>
+							<label class="nx-payment-method">
+								<input type="radio" name="nx-payment-method" value="paypal"> 🅿️ PayPal
+							</label>
+						</div>
+					<?php endif; ?>
+
 					<button type="button" class="nx-btn nx-btn--primary nx-btn--block" id="nx-pay-btn" disabled>🔒 Pay securely — <span id="nx-pay-cta-total">—</span></button>
 					<p class="nx-note" id="nx-form-message"></p>
 				</div>

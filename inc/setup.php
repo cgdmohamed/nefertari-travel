@@ -67,6 +67,7 @@ function nefertari_enqueue_assets() {
 			'loginUrl'    => nefertari_account_url( 'login' ),
 			'registerUrl' => nefertari_account_url( 'register' ),
 			'accountUrl'  => nefertari_account_url( 'account' ),
+			'paypalEnabled' => nefertari_paypal_enabled(),
 			'contact'     => array(
 				'full_name' => $user->exists() ? $user->display_name : '',
 				'phone'     => $user->exists() ? get_user_meta( $user->ID, 'nefertari_phone', true ) : '',
