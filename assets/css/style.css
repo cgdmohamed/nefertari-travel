@@ -508,6 +508,25 @@ select.nx-input{ cursor:pointer; }
 .nx-total-sub{ font-size:12px; color:var(--nx-brown); margin-top:2px; }
 .nx-total-value{ font-family:var(--nx-font-display); font-weight:800; font-size:28px; color:var(--nx-pink); }
 
+.nx-slot-calendar{ border:1px solid var(--nx-border-2); border-radius:16px; padding:14px; margin-bottom:18px; }
+.nx-calendar-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.nx-calendar-nav{ background:var(--nx-cream-2); border:none; width:28px; height:28px; border-radius:8px; cursor:pointer; color:var(--nx-pink); font-weight:700; font-size:14px; }
+.nx-calendar-nav:disabled{ opacity:0.3; cursor:default; }
+.nx-calendar-title{ font-weight:700; font-size:14px; }
+.nx-calendar-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.nx-calendar-dow{ text-align:center; font-size:11px; font-weight:700; color:var(--nx-brown); padding:4px 0; }
+.nx-calendar-day{
+  aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:10px; font-size:13px;
+  border:none; background:none; color:#C9B9AC; cursor:default; font-family:inherit;
+}
+.nx-calendar-day.has-slots{ background:var(--nx-cream); color:var(--nx-ink); font-weight:700; cursor:pointer; }
+.nx-calendar-day.has-slots:hover{ background:var(--nx-cream-2); }
+.nx-calendar-day.is-selected{ background:var(--nx-pink); color:#fff; }
+.nx-calendar-empty{ text-align:center; color:var(--nx-brown); font-size:13.5px; padding:10px 0; margin:0; }
+.nx-slot-times{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.nx-slot-time-btn{ border:1px solid var(--nx-border-2); border-radius:10px; padding:8px 12px; font-size:13px; font-weight:600; cursor:pointer; background:#fff; color:var(--nx-ink); font-family:inherit; }
+.nx-slot-time-btn.is-selected{ border-color:var(--nx-pink); background:var(--nx-cream); color:var(--nx-pink); }
+
 .nx-payment-methods{ display:flex; gap:10px; margin-bottom:18px; }
 .nx-payment-method{
   flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px;

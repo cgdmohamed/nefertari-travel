@@ -17,12 +17,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * ---------------------------------------------------------------------- */
 
 function nefertari_seed_account_pages() {
-	$pages = array(
+	$pages   = array(
 		'login'           => 'Log In',
 		'register'        => 'Create Account',
 		'account'         => 'My Account',
 		'payment-result'  => 'Payment Result',
 	);
+	$created = false;
 	foreach ( $pages as $slug => $title ) {
 		if ( get_page_by_path( $slug ) ) {
 			continue;
@@ -33,6 +34,13 @@ function nefertari_seed_account_pages() {
 			'post_title'  => $title,
 			'post_name'   => $slug,
 		) );
+		$created = true;
+	}
+	// A freshly created page can 404 until rewrite rules are rebuilt —
+	// especially likely here since the plugin's "excursion" post type
+	// already has its own custom rewrite rules in the mix.
+	if ( $created ) {
+		flush_rewrite_rules();
 	}
 }
 add_action( 'after_switch_theme', 'nefertari_seed_account_pages' );
@@ -45,11 +53,17 @@ add_action( 'after_switch_theme', 'nefertari_seed_account_pages' );
  * request.
  */
 function nefertari_maybe_seed_account_pages() {
-	if ( get_option( 'nefertari_account_pages_seeded' ) ) {
-		return;
+	if ( ! get_option( 'nefertari_account_pages_seeded' ) ) {
+		nefertari_seed_account_pages();
+		update_option( 'nefertari_account_pages_seeded', '1' );
 	}
-	nefertari_seed_account_pages();
-	update_option( 'nefertari_account_pages_seeded', '1' );
+	// Separate one-time flag: sites that already ran the block above before
+	// the flush_rewrite_rules() call existed never got it, which can leave
+	// their account pages 404ing even though the pages themselves exist.
+	if ( ! get_option( 'nefertari_account_pages_flushed' ) ) {
+		flush_rewrite_rules();
+		update_option( 'nefertari_account_pages_flushed', '1' );
+	}
 }
 add_action( 'admin_init', 'nefertari_maybe_seed_account_pages' );
 

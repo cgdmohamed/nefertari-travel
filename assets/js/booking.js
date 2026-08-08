@@ -76,6 +76,7 @@
 		tripField: document.getElementById( 'nx-trip-field' ),
 		tripLockedName: document.getElementById( 'nx-trip-locked-name' ),
 		paymentMethods: document.getElementById( 'nx-payment-methods' ),
+		slotCalendar: document.getElementById( 'nx-slot-calendar' ),
 	};
 
 	var state = { adults: 2, children: 0, lastPrice: null, paymentMethod: 'kashier' };
@@ -310,11 +311,151 @@
 		} );
 	} );
 
+	/* Departure calendar ----------------------------------------------------
+	 * els.slotSelect stays the single source of truth for the selected slot
+	 * (its <option>s carry the id -> everything else, pricing/validation,
+	 * already reads its .value and listens for its "change" event) — it's
+	 * just hidden now. The calendar below is a second, friendlier view onto
+	 * the same options, and only ever writes to the select, never reads
+	 * from it, so there's one direction of truth. ------------------------*/
+
+	var calendarState = { byDay: {}, viewYear: 0, viewMonth: 0, selectedDay: '' };
+
+	function dayKey( date ) {
+		return date.getFullYear() + '-' + String( date.getMonth() + 1 ).padStart( 2, '0' ) + '-' + String( date.getDate() ).padStart( 2, '0' );
+	}
+
+	function selectSlot( slotId ) {
+		els.slotSelect.value = slotId;
+		els.slotSelect.dispatchEvent( new Event( 'change' ) );
+	}
+
+	function renderSlotTimes( key ) {
+		var timesEl = document.getElementById( 'nx-slot-times' );
+		if ( ! timesEl ) {
+			return;
+		}
+		var daySlots = ( calendarState.byDay[ key ] || [] ).slice().sort( function ( a, b ) {
+			return a.date - b.date;
+		} );
+		timesEl.innerHTML = daySlots.map( function ( slot ) {
+			var label = slot.date.toLocaleString( undefined, { hour: 'numeric', minute: '2-digit' } );
+			return '<button type="button" class="nx-slot-time-btn" data-slot-id="' + slot.id + '">' + label + ' · ' + slot.remaining + ' left</button>';
+		} ).join( '' );
+		timesEl.querySelectorAll( '[data-slot-id]' ).forEach( function ( btn ) {
+			btn.addEventListener( 'click', function () {
+				selectSlot( btn.getAttribute( 'data-slot-id' ) );
+				timesEl.querySelectorAll( '.nx-slot-time-btn' ).forEach( function ( b ) {
+					b.classList.toggle( 'is-selected', b === btn );
+				} );
+			} );
+		} );
+	}
+
+	function selectCalendarDay( key ) {
+		calendarState.selectedDay = key;
+		els.slotCalendar.querySelectorAll( '[data-cal-day]' ).forEach( function ( btn ) {
+			btn.classList.toggle( 'is-selected', btn.getAttribute( 'data-cal-day' ) === key );
+		} );
+		renderSlotTimes( key );
+
+		var daySlots = calendarState.byDay[ key ] || [];
+		selectSlot( 1 === daySlots.length ? daySlots[ 0 ].id : '' );
+	}
+
+	function drawCalendarMonth() {
+		var byDay = calendarState.byDay;
+		var year = calendarState.viewYear;
+		var month = calendarState.viewMonth;
+		var monthStart = new Date( year, month, 1 );
+		var monthEnd = new Date( year, month + 1, 0 );
+		var daysInMonth = monthEnd.getDate();
+		var startWeekday = ( monthStart.getDay() + 6 ) % 7; // Monday-first
+
+		var dayKeys = Object.keys( byDay );
+		var hasEarlier = dayKeys.some( function ( key ) { return key < dayKey( monthStart ); } );
+		var hasLater = dayKeys.some( function ( key ) { return key > dayKey( monthEnd ); } );
+
+		var html = '<div class="nx-calendar-head">' +
+			'<button type="button" class="nx-calendar-nav" data-cal-prev' + ( hasEarlier ? '' : ' disabled' ) + '>‹</button>' +
+			'<span class="nx-calendar-title">' + monthStart.toLocaleString( undefined, { month: 'long', year: 'numeric' } ) + '</span>' +
+			'<button type="button" class="nx-calendar-nav" data-cal-next' + ( hasLater ? '' : ' disabled' ) + '>›</button>' +
+			'</div><div class="nx-calendar-grid">';
+
+		[ 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su' ].forEach( function ( label ) {
+			html += '<div class="nx-calendar-dow">' + label + '</div>';
+		} );
+		for ( var i = 0; i < startWeekday; i++ ) {
+			html += '<div class="nx-calendar-day"></div>';
+		}
+		for ( var day = 1; day <= daysInMonth; day++ ) {
+			var key = year + '-' + String( month + 1 ).padStart( 2, '0' ) + '-' + String( day ).padStart( 2, '0' );
+			var hasSlots = !! byDay[ key ];
+			var classes = 'nx-calendar-day' + ( hasSlots ? ' has-slots' : '' ) + ( key === calendarState.selectedDay ? ' is-selected' : '' );
+			html += '<button type="button" class="' + classes + '"' + ( hasSlots ? ' data-cal-day="' + key + '"' : ' disabled' ) + '>' + day + '</button>';
+		}
+		html += '</div><div class="nx-slot-times" id="nx-slot-times"></div>';
+
+		els.slotCalendar.innerHTML = html;
+
+		var prevBtn = els.slotCalendar.querySelector( '[data-cal-prev]' );
+		var nextBtn = els.slotCalendar.querySelector( '[data-cal-next]' );
+		if ( prevBtn ) {
+			prevBtn.addEventListener( 'click', function () {
+				calendarState.viewMonth--;
+				if ( calendarState.viewMonth < 0 ) {
+					calendarState.viewMonth = 11;
+					calendarState.viewYear--;
+				}
+				drawCalendarMonth();
+			} );
+		}
+		if ( nextBtn ) {
+			nextBtn.addEventListener( 'click', function () {
+				calendarState.viewMonth++;
+				if ( calendarState.viewMonth > 11 ) {
+					calendarState.viewMonth = 0;
+					calendarState.viewYear++;
+				}
+				drawCalendarMonth();
+			} );
+		}
+		els.slotCalendar.querySelectorAll( '[data-cal-day]' ).forEach( function ( btn ) {
+			btn.addEventListener( 'click', function () {
+				selectCalendarDay( btn.getAttribute( 'data-cal-day' ) );
+			} );
+		} );
+
+		if ( calendarState.selectedDay ) {
+			renderSlotTimes( calendarState.selectedDay );
+		}
+	}
+
+	function renderSlotCalendar( slots, emptyMessage ) {
+		if ( ! slots || ! slots.length ) {
+			els.slotCalendar.innerHTML = '<p class="nx-calendar-empty">' + emptyMessage + '</p>';
+			calendarState = { byDay: {}, viewYear: 0, viewMonth: 0, selectedDay: '' };
+			return;
+		}
+
+		var byDay = {};
+		slots.forEach( function ( slot ) {
+			var date = new Date( slot.departure_start.replace( ' ', 'T' ) );
+			var key = dayKey( date );
+			( byDay[ key ] = byDay[ key ] || [] ).push( { id: slot.id, date: date, remaining: slot.remaining_capacity } );
+		} );
+
+		var firstDate = new Date( Object.keys( byDay ).sort()[ 0 ] + 'T00:00:00' );
+		calendarState = { byDay: byDay, viewYear: firstDate.getFullYear(), viewMonth: firstDate.getMonth(), selectedDay: '' };
+		drawCalendarMonth();
+	}
+
 	/* Availability ------------------------------------------------------------*/
 
 	els.tripSelect.addEventListener( 'change', function () {
 		els.slotSelect.innerHTML = '<option value="">Loading departures…</option>';
 		els.slotSelect.disabled = true;
+		renderSlotCalendar( [], 'Loading departures…' );
 		recalcPrice();
 		validateForm();
 		updateTripNextState();
@@ -322,25 +463,24 @@
 		var excursionId = els.tripSelect.value;
 		if ( ! excursionId ) {
 			els.slotSelect.innerHTML = '<option value="">Select an excursion first…</option>';
+			renderSlotCalendar( [], 'Select an excursion first…' );
 			return;
 		}
 
 		api( '/excursions/' + excursionId + '/availability', 'GET' )
 			.then( function ( data ) {
 				var slots = data.slots || [];
-				if ( ! slots.length ) {
-					els.slotSelect.innerHTML = '<option value="">No departures available</option>';
-					return;
-				}
 				els.slotSelect.innerHTML = '<option value="">Select a departure…</option>' + slots.map( function ( slot ) {
 					var date = new Date( slot.departure_start.replace( ' ', 'T' ) );
 					var label = date.toLocaleString( undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' } );
 					return '<option value="' + slot.id + '">' + label + ' — ' + slot.remaining_capacity + ' spots left</option>';
 				} ).join( '' );
 				els.slotSelect.disabled = false;
+				renderSlotCalendar( slots, 'No departures scheduled yet — contact us to check availability.' );
 			} )
 			.catch( function () {
 				els.slotSelect.innerHTML = '<option value="">Couldn’t load departures — try again</option>';
+				renderSlotCalendar( [], 'Couldn’t load departures — try again.' );
 			} );
 	} );
 

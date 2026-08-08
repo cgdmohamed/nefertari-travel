@@ -81,8 +81,11 @@ $is_logged_in = is_user_logged_in();
 						</div>
 					</div>
 
-					<label class="nx-field-label" for="nx-slot-select">Departure</label>
-					<select class="nx-input" id="nx-slot-select" disabled>
+					<label class="nx-field-label">Departure</label>
+					<div class="nx-slot-calendar" id="nx-slot-calendar">
+						<p class="nx-calendar-empty">Select an excursion first…</p>
+					</div>
+					<select class="nx-input" id="nx-slot-select" disabled style="display:none">
 						<option value="">Select an excursion first…</option>
 					</select>
 
