@@ -67,6 +67,14 @@ function nefertari_maybe_seed_account_pages() {
 }
 add_action( 'admin_init', 'nefertari_maybe_seed_account_pages' );
 
+function nefertari_booking_is_retryable( $status ) {
+	return in_array( $status, array( 'awaiting_payment', 'payment_failed', 'payment_expired' ), true );
+}
+
+function nefertari_booking_is_cancellable( $status ) {
+	return 'confirmed' === $status;
+}
+
 /**
  * URL for one of the account pages, falling back to home if it's somehow
  * missing (e.g. deleted after activation).
@@ -236,3 +244,85 @@ function nefertari_handle_account_update() {
 	exit;
 }
 add_action( 'template_redirect', 'nefertari_handle_account_update' );
+
+/* -------------------------------------------------------------------------
+ * Account page: retry payment on a booking that never got paid
+ * ---------------------------------------------------------------------- */
+
+function nefertari_handle_retry_payment() {
+	if ( ! is_page( 'account' ) || ! isset( $_POST['nefertari_retry_payment'] ) ) {
+		return;
+	}
+	if ( ! is_user_logged_in() || ! nefertari_booking_plugin_active() ) {
+		return;
+	}
+
+	$booking_id = absint( $_POST['nefertari_retry_payment'] );
+	if ( ! isset( $_POST['nefertari_retry_nonce'] ) || ! wp_verify_nonce( $_POST['nefertari_retry_nonce'], 'nefertari_retry_payment_' . $booking_id ) ) {
+		wp_safe_redirect( add_query_arg( 'retry_error', 'invalid_request', nefertari_account_url( 'account' ) ) );
+		exit;
+	}
+
+	$booking = ( new \Nefertari\Booking\Services\Booking_Service() )->prepare_for_retry( $booking_id, get_current_user_id() );
+	if ( is_wp_error( $booking ) ) {
+		wp_safe_redirect( add_query_arg( 'retry_error', $booking->get_error_code(), nefertari_account_url( 'account' ) ) );
+		exit;
+	}
+
+	$settings = new \Nefertari\Booking\Settings\Settings();
+	$method   = sanitize_key( wp_unslash( $_POST['payment_method'] ?? 'kashier' ) );
+	$session  = 'paypal' === $method && $settings->get( 'paypal_enabled' )
+		? ( new \Nefertari\Booking\Services\PayPal_Service( $settings ) )->create_order( $booking_id )
+		: ( new \Nefertari\Booking\Services\Kashier_Service( $settings ) )->create_payment_session( $booking_id );
+
+	$checkout_url = $session['checkout_url'] ?? '';
+	if ( $checkout_url ) {
+		wp_safe_redirect( $checkout_url );
+		exit;
+	}
+
+	wp_safe_redirect( add_query_arg( 'retry_error', 'payment_unavailable', nefertari_account_url( 'account' ) ) );
+	exit;
+}
+add_action( 'template_redirect', 'nefertari_handle_retry_payment' );
+
+function nefertari_retry_error_message( $code ) {
+	$messages = array(
+		'not_found'         => 'That booking could not be found.',
+		'not_retryable'     => 'This booking can no longer be retried — its status has changed.',
+		'slot_unavailable'  => 'Sorry, this departure no longer has enough availability. Please book a different date.',
+		'payment_unavailable' => 'Payment couldn\'t be started — please contact us to complete this booking.',
+		'invalid_request'  => 'Your session expired — please try again.',
+	);
+	return $messages[ $code ] ?? 'Something went wrong — please try again or contact us.';
+}
+
+/* -------------------------------------------------------------------------
+ * Account page: self-service cancellation request
+ * ---------------------------------------------------------------------- */
+
+function nefertari_handle_cancellation_request() {
+	if ( ! is_page( 'account' ) || ! isset( $_POST['nefertari_request_cancellation'] ) ) {
+		return;
+	}
+	if ( ! is_user_logged_in() || ! nefertari_booking_plugin_active() ) {
+		return;
+	}
+
+	$booking_id = absint( $_POST['nefertari_request_cancellation'] );
+	if ( ! isset( $_POST['nefertari_cancel_nonce'] ) || ! wp_verify_nonce( $_POST['nefertari_cancel_nonce'], 'nefertari_request_cancellation_' . $booking_id ) ) {
+		wp_safe_redirect( add_query_arg( 'cancel_error', '1', nefertari_account_url( 'account' ) ) );
+		exit;
+	}
+
+	$reason = sanitize_textarea_field( wp_unslash( $_POST['reason'] ?? '' ) );
+	$ok     = ( new \Nefertari\Booking\Services\Cancellation_Service() )->request_cancellation(
+		$booking_id,
+		get_current_user_id(),
+		$reason ?: 'Requested by customer via My Account.'
+	);
+
+	wp_safe_redirect( add_query_arg( $ok ? 'cancel_requested' : 'cancel_error', '1', nefertari_account_url( 'account' ) ) );
+	exit;
+}
+add_action( 'template_redirect', 'nefertari_handle_cancellation_request' );

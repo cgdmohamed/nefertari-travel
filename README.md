@@ -71,6 +71,26 @@ truth and can land a moment later); for PayPal that page also fires the
 capture call first (a PayPal order isn't paid until captured), then polls
 the same way.
 
+## My Account
+
+Beyond editing your profile, the account page (`page-account.php`) is a
+full booking management area:
+
+- **Bookings list** — every booking, with a quick "Retry payment" button
+  right in the row for anything still `awaiting_payment`, `payment_failed`,
+  or `payment_expired`.
+- **Booking detail** (`?booking=ID`) — full info, the traveler list, and
+  complete payment history (every attempt, not just the latest), plus
+  whichever action fits the booking's status: retry payment (with the
+  same Kashier/PayPal choice as the booking modal), or request
+  cancellation for a `confirmed` booking (shown alongside the excursion's
+  cancellation policy).
+
+Retry re-uses the *existing* booking rather than creating a new one — if
+its original seat hold already expired, the plugin re-holds the same
+seats first (failing clearly if the slot has since sold out) rather than
+silently letting a stale booking be paid for seats no longer available.
+
 ## Structure
 
 - `functions.php` + `inc/` — theme bootstrap:

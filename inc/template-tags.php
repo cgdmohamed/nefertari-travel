@@ -254,12 +254,15 @@ function nefertari_booking_status_tone( $status ) {
 	$map = array(
 		'confirmed'              => 'success',
 		'completed'              => 'success',
+		'paid'                   => 'success',
 		'awaiting_payment'       => 'warning',
 		'payment_processing'     => 'warning',
+		'session_created'        => 'warning',
 		'cancellation_requested' => 'warning',
 		'payment_failed'         => 'danger',
 		'payment_expired'        => 'danger',
 		'cancelled'              => 'danger',
+		'failed'                 => 'danger',
 	);
 	return $map[ $status ] ?? 'neutral';
 }
