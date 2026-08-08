@@ -46,18 +46,7 @@ function nefertari_enqueue_assets() {
 
 	wp_enqueue_style( 'nefertari-style', NEFERTARI_URI . '/assets/css/style.css', array(), NEFERTARI_VERSION );
 
-	$main_deps = array();
-	if ( is_singular( 'excursion' ) ) {
-		// Unique handle: "swiper" is a common generic handle name other
-		// plugins bundling the same library may already register, which (per
-		// the nefertari-booking script collision fixed earlier) would silently
-		// drop this registration in favor of theirs — a different version, or
-		// not loaded on this page at all.
-		wp_enqueue_style( 'nefertari-swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css', array(), '11' );
-		wp_enqueue_script( 'nefertari-swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js', array(), '11', true );
-		$main_deps[] = 'nefertari-swiper';
-	}
-	wp_enqueue_script( 'nefertari-main', NEFERTARI_URI . '/assets/js/main.js', $main_deps, NEFERTARI_VERSION, true );
+	wp_enqueue_script( 'nefertari-main', NEFERTARI_URI . '/assets/js/main.js', array(), NEFERTARI_VERSION, true );
 
 	if ( nefertari_booking_plugin_active() ) {
 		// Unique handle: the plugin registers its own legacy widget script under
