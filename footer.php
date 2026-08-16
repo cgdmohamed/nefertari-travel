@@ -62,10 +62,10 @@ $wa_generic = nefertari_whatsapp_link( "Hi " . get_bloginfo( 'name' ) . ", I'd l
 			<div>
 				<div class="nx-foot-col-title">Get in touch</div>
 				<div class="nx-foot-contact">
-					<div class="nx-foot-contact-row"><?php echo nefertari_icon( 'pin', '#FBBA6A', 16 ); ?> <?php echo esc_html( nefertari_option( 'address' ) ); ?></div>
-					<div class="nx-foot-contact-row"><a href="tel:<?php echo esc_attr( nefertari_phone_tel() ); ?>" class="is-strong"><?php echo nefertari_icon( 'phone', '#FBBA6A', 16 ); ?> <?php echo esc_html( nefertari_option( 'phone' ) ); ?></a></div>
-					<div class="nx-foot-contact-row"><a href="mailto:<?php echo esc_attr( nefertari_option( 'email' ) ); ?>"><?php echo nefertari_icon( 'mail', '#FBBA6A', 16 ); ?> <?php echo esc_html( nefertari_option( 'email' ) ); ?></a></div>
-					<div class="nx-foot-contact-row"><?php echo nefertari_icon( 'clock', '#FBBA6A', 16 ); ?> <?php echo esc_html( nefertari_option( 'hours' ) ); ?></div>
+					<div class="nx-foot-contact-row"><?php echo nefertari_icon( 'pin', '#FBBA6A', 16 ); ?> <?php echo esc_html( nefertari_option( 'address', 'Sheraton Road, Hurghada, Red Sea Governorate, Egypt' ) ); ?></div>
+					<div class="nx-foot-contact-row"><a href="tel:<?php echo esc_attr( nefertari_phone_tel() ); ?>" class="is-strong"><?php echo nefertari_icon( 'phone', '#FBBA6A', 16 ); ?> <?php echo esc_html( nefertari_option( 'phone', '+20 111 202 6922' ) ); ?></a></div>
+					<div class="nx-foot-contact-row"><a href="mailto:<?php echo esc_attr( nefertari_option( 'email', 'hello@nefertaritravel.com' ) ); ?>"><?php echo nefertari_icon( 'mail', '#FBBA6A', 16 ); ?> <?php echo esc_html( nefertari_option( 'email', 'hello@nefertaritravel.com' ) ); ?></a></div>
+					<div class="nx-foot-contact-row"><?php echo nefertari_icon( 'clock', '#FBBA6A', 16 ); ?> <?php echo esc_html( nefertari_option( 'hours', 'Open daily · 8:00am – 10:00pm' ) ); ?></div>
 				</div>
 			</div>
 		</div>
