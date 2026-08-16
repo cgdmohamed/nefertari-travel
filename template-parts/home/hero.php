@@ -32,7 +32,7 @@ $wa_hero = nefertari_whatsapp_link( 'Hi ' . get_bloginfo( 'name' ) . ', I\'d lik
 		</div>
 		<div class="nx-hero-media">
 			<div class="nx-hero-frame">
-				<img src="<?php echo esc_url( nefertari_option( 'hero_image_url' ) ); ?>" alt="Egypt" class="nx-hero-img">
+				<img src="<?php echo esc_url( nefertari_option( 'hero_image_url', 'https://images.unsplash.com/photo-1539768942893-daf53e448371?w=1200&q=80' ) ); ?>" alt="Egypt" class="nx-hero-img">
 			</div>
 			<div class="nx-hero-float">
 				<div class="nx-hero-float-icon">↗</div>
