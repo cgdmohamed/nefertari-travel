@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'NEFERTARI_VERSION', '1.10.0' );
+define( 'NEFERTARI_VERSION', '1.10.1' );
 define( 'NEFERTARI_DIR', get_template_directory() );
 define( 'NEFERTARI_URI', get_template_directory_uri() );
 
