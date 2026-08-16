@@ -122,11 +122,19 @@ add_action( 'template_redirect', 'nefertari_handle_login_submit' );
 
 function nefertari_login_error_message( $code ) {
 	$messages = array(
-		'empty_fields'    => 'Please enter your username/email and password.',
-		'invalid_login'   => 'That username/email and password don\'t match.',
-		'invalid_request' => 'Your session expired — please try again.',
+		'empty_fields'          => 'Please enter your username/email and password.',
+		'invalid_login'         => 'That username/email and password don\'t match.',
+		'invalid_request'       => 'Your session expired — please try again.',
+		'oauth_cancelled'       => 'Sign-in was cancelled.',
+		'oauth_no_email'        => "We couldn't get an email address from that account — please try a different sign-in method.",
+		'registration_closed'   => 'New account registration is currently closed.',
+		'registration_failed'   => 'Something went wrong creating your account. Please try again.',
+		'google_token_failed'   => "Couldn't connect to Google — please try again.",
+		'google_profile_failed' => "Couldn't get your Google profile — please try again.",
+		'facebook_token_failed' => "Couldn't connect to Facebook — please try again.",
+		'facebook_profile_failed' => "Couldn't get your Facebook profile — please try again.",
 	);
-	return $messages[ $code ] ?? '';
+	return $messages[ $code ] ?? 'Something went wrong — please try again.';
 }
 
 /* -------------------------------------------------------------------------

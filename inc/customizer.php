@@ -206,6 +206,28 @@ function nefertari_customize_register( $wp_customize ) {
 			'type'    => 'dropdown-pages',
 		) );
 	}
+
+	/* Social login --------------------------------------------------------*/
+	$wp_customize->add_section( 'nefertari_social_login', array(
+		'title'       => __( 'Social Login', 'nefertari-travel' ),
+		'panel'       => 'nefertari_settings',
+		'description' => sprintf(
+			/* translators: 1: Google redirect URI, 2: Facebook redirect URI */
+			__( 'Optional "Continue with…" buttons on the Login/Create Account pages. Create credentials in each provider\'s developer console and paste them in below — when registering the app, use these exact redirect URIs: Google → %1$s · Facebook → %2$s', 'nefertari-travel' ),
+			esc_url( nefertari_oauth_redirect_uri( 'google' ) ),
+			esc_url( nefertari_oauth_redirect_uri( 'facebook' ) )
+		),
+	) );
+
+	$social_login_fields = array(
+		'google_login_enabled'   => array( __( 'Enable "Continue with Google"', 'nefertari-travel' ), 'checkbox', '' ),
+		'google_client_id'       => array( __( 'Google client ID', 'nefertari-travel' ), 'text', '' ),
+		'google_client_secret'   => array( __( 'Google client secret', 'nefertari-travel' ), 'text', '' ),
+		'facebook_login_enabled' => array( __( 'Enable "Continue with Facebook"', 'nefertari-travel' ), 'checkbox', '' ),
+		'facebook_app_id'        => array( __( 'Facebook app ID', 'nefertari-travel' ), 'text', '' ),
+		'facebook_app_secret'    => array( __( 'Facebook app secret', 'nefertari-travel' ), 'text', '' ),
+	);
+	nefertari_add_text_settings( $wp_customize, 'nefertari_social_login', $social_login_fields );
 }
 add_action( 'customize_register', 'nefertari_customize_register' );
 

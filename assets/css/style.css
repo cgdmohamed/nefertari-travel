@@ -444,6 +444,11 @@ button{ font-family:inherit; }
 .nx-form-error{ background:var(--nx-red-bg, #FBEAE7); color:#B0413A; border-radius:12px; padding:12px 16px; font-size:14px; font-weight:600; margin-bottom:18px; }
 .nx-form-success{ background:var(--nx-green-bg); color:var(--nx-green); border-radius:12px; padding:12px 16px; font-size:14px; font-weight:600; margin-bottom:18px; }
 
+.nx-oauth-buttons{ display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+.nx-oauth-btn{ display:flex; align-items:center; justify-content:center; gap:10px; background:#fff; }
+.nx-oauth-divider{ display:flex; align-items:center; gap:12px; margin-bottom:20px; color:var(--nx-ink-soft); font-size:13px; font-weight:600; }
+.nx-oauth-divider::before, .nx-oauth-divider::after{ content:''; flex:1; height:1px; background:var(--nx-border-2); }
+
 .nx-account-page{ max-width:840px; margin:0 auto; padding:50px 6vw 90px; }
 .nx-account-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:14px; }
 .nx-account-head h1{ font-family:var(--nx-font-display); font-weight:800; font-size:clamp(26px,3vw,34px); letter-spacing:-0.6px; margin:0; }

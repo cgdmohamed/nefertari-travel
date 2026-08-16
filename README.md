@@ -50,6 +50,29 @@ code editing required:
 - **Contact CTA Section** — heading, subheading, button label.
 - **Footer** — brand description paragraph, and Privacy/Terms/Cancellation
   policy links (pick any existing Page from a dropdown).
+- **Social Login** — turns on "Continue with Google"/"Continue with
+  Facebook" on the Login/Create Account pages once you paste in that
+  provider's client ID/secret (created in their own developer console —
+  the section shows the exact redirect URI to register there). Off by
+  default; each provider is independent, so you can enable just one.
+
+## Social login
+
+Standard OAuth2 authorization-code flow against Google's and Facebook's
+own endpoints directly (no SDK, matching how Kashier/PayPal are
+integrated in the plugin) — see `inc/social-login.php`. Account matching
+on callback, in order: an existing user already linked to that provider
+ID → an existing user with the same email (gets linked automatically) →
+a brand new account (same role assignment as normal registration). Only
+a *verified* email is trusted for matching/creating an account — Google
+exposes `email_verified` on its profile response and an unverified one
+is treated as no email at all; Facebook's is always used since its Graph
+API doesn't expose an equivalent flag.
+
+Apple Sign-In isn't implemented — meaningfully more setup (a paid Apple
+Developer Program membership, a Services ID, a private key, and signing
+your own JWT client secret) than Google/Facebook, deliberately left for
+a follow-up.
 
 ## Booking flow
 

@@ -27,6 +27,8 @@ $redirect_to = isset( $_GET['redirect_to'] ) ? esc_url_raw( wp_unslash( $_GET['r
 			<div class="nx-form-error"><?php echo esc_html( nefertari_login_error_message( $error ) ); ?></div>
 		<?php endif; ?>
 
+		<?php get_template_part( 'template-parts/auth/social-buttons', null, array( 'redirect_to' => $redirect_to ) ); ?>
+
 		<form method="post">
 			<?php wp_nonce_field( 'nefertari_login', 'nefertari_login_nonce' ); ?>
 			<input type="hidden" name="nefertari_login" value="1">
