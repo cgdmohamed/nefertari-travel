@@ -34,7 +34,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<header class="nx-header">
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="nx-brand">
 			<?php if ( has_custom_logo() ) : ?>
-				<span class="nx-brand-mark nx-brand-mark--logo"><?php the_custom_logo(); ?></span>
+				<?php
+				// Not the_custom_logo(): it self-wraps in its own <a>, which
+				// is invalid nested inside the .nx-brand <a> below — browsers
+				// recover by auto-closing that outer anchor early, right
+				// after this span, which detaches the brand text from the
+				// link entirely. wp_get_attachment_image() renders the same
+				// <img> with no wrapping anchor.
+				?>
+				<span class="nx-brand-mark nx-brand-mark--logo"><?php echo wp_get_attachment_image( get_theme_mod( 'custom_logo' ), 'full', false, array( 'class' => 'custom-logo', 'alt' => get_bloginfo( 'name' ) ) ); ?></span>
 			<?php else : ?>
 				<span class="nx-brand-mark"><?php echo esc_html( mb_substr( get_bloginfo( 'name' ), 0, 1 ) ); ?></span>
 			<?php endif; ?>
