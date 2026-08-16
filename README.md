@@ -91,6 +91,14 @@ its original seat hold already expired, the plugin re-holds the same
 seats first (failing clearly if the slot has since sold out) rather than
 silently letting a stale booking be paid for seats no longer available.
 
+**Leave a review** — text + a 5-star rating, no photo. Shown only to
+customers with a `confirmed`/`completed` booking, and only lets them pick
+from *those* excursions — not a fully open public form. Submits as a
+`testimonial` post with `post_status = pending` rather than publishing
+immediately, so it only goes live once approved in wp-admin (Testimonials);
+the metabox there shows who submitted it, for the admin to cross-check
+against real bookings before approving.
+
 ## Structure
 
 - `functions.php` + `inc/` — theme bootstrap:

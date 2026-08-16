@@ -527,6 +527,13 @@ select.nx-input{ cursor:pointer; }
 .nx-slot-time-btn{ border:1px solid var(--nx-border-2); border-radius:10px; padding:8px 12px; font-size:13px; font-weight:600; cursor:pointer; background:#fff; color:var(--nx-ink); font-family:inherit; }
 .nx-slot-time-btn.is-selected{ border-color:var(--nx-pink); background:var(--nx-cream); color:var(--nx-pink); }
 
+.nx-rating-input{ display:flex; flex-direction:row-reverse; justify-content:flex-end; gap:4px; margin-bottom:14px; }
+.nx-rating-input input{ position:absolute; opacity:0; width:0; height:0; }
+.nx-rating-input label{ font-size:28px; line-height:1; color:var(--nx-border-2); cursor:pointer; }
+.nx-rating-input input:checked ~ label,
+.nx-rating-input label:hover,
+.nx-rating-input label:hover ~ label{ color:var(--nx-gold); }
+
 .nx-payment-methods{ display:flex; gap:10px; margin-bottom:18px; }
 .nx-payment-method{
   flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px;

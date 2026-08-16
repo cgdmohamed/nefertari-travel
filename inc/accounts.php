@@ -326,3 +326,82 @@ function nefertari_handle_cancellation_request() {
 	exit;
 }
 add_action( 'template_redirect', 'nefertari_handle_cancellation_request' );
+
+/* -------------------------------------------------------------------------
+ * Account page: customer review submission (text + star rating, no photo)
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Excursions a customer can leave a review for — anything they have a
+ * confirmed or completed booking on, deduplicated. Used both to gate the
+ * review form's visibility and to validate what's actually submitted.
+ */
+function nefertari_reviewable_excursions( $customer_id ) {
+	if ( ! nefertari_booking_plugin_active() ) {
+		return array();
+	}
+	$excursions = array();
+	foreach ( ( new \Nefertari\Booking\Services\Booking_Service() )->for_customer( $customer_id ) as $booking ) {
+		if ( in_array( $booking['status'], array( 'confirmed', 'completed' ), true ) ) {
+			$excursions[ (int) $booking['excursion_id'] ] = get_the_title( (int) $booking['excursion_id'] );
+		}
+	}
+	return $excursions;
+}
+
+function nefertari_handle_review_submit() {
+	if ( ! is_page( 'account' ) || ! isset( $_POST['nefertari_submit_review'] ) ) {
+		return;
+	}
+	if ( ! is_user_logged_in() ) {
+		return;
+	}
+	if ( ! isset( $_POST['nefertari_review_nonce'] ) || ! wp_verify_nonce( $_POST['nefertari_review_nonce'], 'nefertari_submit_review' ) ) {
+		wp_safe_redirect( add_query_arg( 'review_error', 'invalid_request', nefertari_account_url( 'account' ) ) );
+		exit;
+	}
+
+	$current_user = wp_get_current_user();
+	$rating       = max( 1, min( 5, absint( $_POST['rating'] ?? 5 ) ) );
+	$text         = sanitize_textarea_field( wp_unslash( $_POST['review_text'] ?? '' ) );
+	$excursion_id = absint( $_POST['excursion_id'] ?? 0 );
+	$reviewable   = nefertari_reviewable_excursions( $current_user->ID );
+
+	if ( '' === trim( $text ) ) {
+		wp_safe_redirect( add_query_arg( 'review_error', 'empty', nefertari_account_url( 'account' ) ) );
+		exit;
+	}
+	if ( ! isset( $reviewable[ $excursion_id ] ) ) {
+		wp_safe_redirect( add_query_arg( 'review_error', 'not_eligible', nefertari_account_url( 'account' ) ) );
+		exit;
+	}
+
+	$review_id = wp_insert_post( array(
+		'post_type'    => 'testimonial',
+		// Pending, not publish: goes live only once reviewed in wp-admin
+		// (Testimonials list) — this form has no photo/CAPTCHA/etc. to
+		// screen submissions the way the rest of the site's forms don't
+		// need to, so a moderation step takes that role instead.
+		'post_status'  => 'pending',
+		'post_title'   => $current_user->display_name,
+		'post_content' => $text,
+	) );
+	if ( $review_id && ! is_wp_error( $review_id ) ) {
+		update_post_meta( $review_id, '_nx_rating', $rating );
+		update_post_meta( $review_id, '_nx_meta_line', $reviewable[ $excursion_id ] );
+		update_post_meta( $review_id, '_nx_customer_id', $current_user->ID );
+	}
+
+	wp_safe_redirect( add_query_arg( 'review_submitted', '1', nefertari_account_url( 'account' ) ) );
+	exit;
+}
+add_action( 'template_redirect', 'nefertari_handle_review_submit' );
+
+function nefertari_review_error_message( $code ) {
+	$messages = array(
+		'empty'           => 'Please write a few words for your review.',
+		'not_eligible'    => 'You can only review an excursion you\'ve completed with us.',
+		'invalid_request' => 'Your session expired — please try again.',
+	);
+	return $messages[ $code ] ?? 'Something went wrong — please try again.';
+}

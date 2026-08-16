@@ -28,9 +28,17 @@ function nefertari_field_row( $label, $field_html, $help = '' ) {
 
 function nefertari_render_testimonial_metabox( $post ) {
 	wp_nonce_field( 'nefertari_save_testimonial', 'nefertari_testimonial_nonce' );
-	$meta_line = get_post_meta( $post->ID, '_nx_meta_line', true );
-	$rating    = get_post_meta( $post->ID, '_nx_rating', true ) ?: '5';
+	$meta_line   = get_post_meta( $post->ID, '_nx_meta_line', true );
+	$rating      = get_post_meta( $post->ID, '_nx_rating', true ) ?: '5';
+	$customer_id = (int) get_post_meta( $post->ID, '_nx_customer_id', true );
 	?>
+	<?php if ( $customer_id && ( $customer = get_userdata( $customer_id ) ) ) : ?>
+		<p class="description">
+			Submitted by
+			<a href="<?php echo esc_url( get_edit_user_link( $customer_id ) ); ?>"><?php echo esc_html( $customer->display_name . ' (' . $customer->user_email . ')' ); ?></a>
+			via My Account — verify their booking before publishing.
+		</p>
+	<?php endif; ?>
 	<?php nefertari_field_row( __( 'Meta line (country · trip)', 'nefertari-travel' ), '<input type="text" name="nx_meta_line" value="' . esc_attr( $meta_line ) . '" class="widefat" placeholder="e.g. United Kingdom · Cairo & Pyramids">' ); ?>
 	<?php nefertari_field_row( __( 'Rating (1–5)', 'nefertari-travel' ), '<input type="number" min="1" max="5" name="nx_rating" value="' . esc_attr( $rating ) . '" class="small-text">' ); ?>
 	<p class="description"><?php esc_html_e( 'Use the title field for the traveller\'s name and the main editor for the review text.', 'nefertari-travel' ); ?></p>

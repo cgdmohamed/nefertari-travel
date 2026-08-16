@@ -207,6 +207,42 @@ $booking          = ( $plugin_active && $view_booking_id ) ? ( new \Nefertari\Bo
 				</table>
 			<?php endif; ?>
 		</div>
+
+		<?php $reviewable = nefertari_reviewable_excursions( $current_user->ID ); ?>
+		<?php if ( ! empty( $reviewable ) ) : ?>
+			<div class="nx-panel" style="margin-top:24px">
+				<h2>Leave a review</h2>
+				<?php if ( isset( $_GET['review_submitted'] ) ) : ?>
+					<div class="nx-form-success">Thanks! Your review is in — it'll appear on the site once we've had a quick look.</div>
+				<?php elseif ( isset( $_GET['review_error'] ) ) : ?>
+					<div class="nx-form-error"><?php echo esc_html( nefertari_review_error_message( sanitize_key( wp_unslash( $_GET['review_error'] ) ) ) ); ?></div>
+				<?php endif; ?>
+				<form method="post">
+					<?php wp_nonce_field( 'nefertari_submit_review', 'nefertari_review_nonce' ); ?>
+					<input type="hidden" name="nefertari_submit_review" value="1">
+
+					<label class="nx-field-label" for="review-excursion">Which excursion?</label>
+					<select id="review-excursion" name="excursion_id" class="nx-input" required>
+						<?php foreach ( $reviewable as $excursion_id => $title ) : ?>
+							<option value="<?php echo esc_attr( $excursion_id ); ?>"><?php echo esc_html( $title ); ?></option>
+						<?php endforeach; ?>
+					</select>
+
+					<label class="nx-field-label">Your rating</label>
+					<div class="nx-rating-input">
+						<?php for ( $i = 5; $i >= 1; $i-- ) : ?>
+							<input type="radio" id="review-rating-<?php echo $i; ?>" name="rating" value="<?php echo $i; ?>"<?php checked( 5, $i ); ?>>
+							<label for="review-rating-<?php echo $i; ?>">★</label>
+						<?php endfor; ?>
+					</div>
+
+					<label class="nx-field-label" for="review-text">Your review</label>
+					<textarea id="review-text" name="review_text" class="nx-input" rows="3" required placeholder="Tell other travellers about your trip…"></textarea>
+
+					<button type="submit" class="nx-btn nx-btn--primary">Submit review</button>
+				</form>
+			</div>
+		<?php endif; ?>
 	</div>
 
 <?php endif; ?>
