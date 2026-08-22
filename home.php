@@ -12,6 +12,7 @@ get_header();
 <section class="nx-page-hero">
 	<div class="nx-page-hero-blob"></div>
 	<div class="nx-page-hero-inner">
+		<?php nefertari_render_breadcrumbs( array( array( 'label' => 'Blog', 'url' => null ) ) ); ?>
 		<div class="nx-eyebrow">The Nefertari journal</div>
 		<h1>Stories, guides &amp; tips for your Egyptian adventure</h1>
 		<p>Local knowledge from the people who run the trips — when to come, what to pack and how to see Egypt at its best.</p>

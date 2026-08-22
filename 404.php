@@ -20,7 +20,7 @@ get_header();
 		<div class="nx-404-links">
 			<a href="<?php echo esc_url( get_post_type_archive_link( 'excursion' ) ?: home_url( '/#excursions' ) ); ?>">Browse excursions</a>
 			<a href="<?php echo esc_url( get_permalink( get_option( 'page_for_posts' ) ) ?: home_url( '/blog/' ) ); ?>">Read the journal</a>
-			<a href="<?php echo esc_url( home_url( '/#contact' ) ); ?>">Contact us</a>
+			<a href="<?php echo esc_url( nefertari_page_url( 'contact' ) ); ?>">Contact us</a>
 		</div>
 	</div>
 </section>

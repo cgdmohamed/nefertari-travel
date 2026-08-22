@@ -33,6 +33,7 @@ $query = new WP_Query( nefertari_excursion_query_args( $filters ) );
 <section class="nx-page-hero">
 	<div class="nx-page-hero-blob"></div>
 	<div class="nx-page-hero-inner">
+		<?php nefertari_render_breadcrumbs( array( array( 'label' => 'Excursions', 'url' => null ) ) ); ?>
 		<div class="nx-eyebrow">Choose your adventure</div>
 		<h1>Our excursion programs</h1>
 	</div>

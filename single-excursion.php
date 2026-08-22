@@ -17,6 +17,12 @@ while ( have_posts() ) :
 	$booked_n     = (int) get_post_meta( $excursion_id, '_nx_booked_count', true );
 	?>
 	<div class="nx-detail-wrap">
+		<?php
+		nefertari_render_breadcrumbs( array(
+			array( 'label' => 'Excursions', 'url' => get_post_type_archive_link( 'excursion' ) ),
+			array( 'label' => get_the_title( $excursion_id ), 'url' => null ),
+		) );
+		?>
 		<a href="<?php echo esc_url( home_url( '/#excursions' ) ); ?>" class="nx-back-link">← All excursions</a>
 
 		<div class="nx-detail">

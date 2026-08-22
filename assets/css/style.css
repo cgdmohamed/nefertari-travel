@@ -298,6 +298,25 @@ button{ font-family:inherit; }
 .nx-back-link{ display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:var(--nx-ink-soft); margin-bottom:24px; text-decoration:none; }
 .nx-back-link:hover{ color:var(--nx-pink); }
 
+/* -- Breadcrumbs -----------------------------------------------------------*/
+.nx-breadcrumbs{ margin-bottom:16px; }
+.nx-breadcrumbs ol{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; list-style:none; margin:0; padding:0; font-size:13px; font-weight:600; }
+.nx-breadcrumbs li{ display:flex; align-items:center; gap:6px; }
+.nx-breadcrumbs a{ color:var(--nx-ink-soft); text-decoration:none; }
+.nx-breadcrumbs a:hover{ color:var(--nx-pink); }
+.nx-breadcrumbs [aria-current="page"]{ color:var(--nx-ink); }
+.nx-breadcrumbs-sep{ color:var(--nx-border-2); }
+
+/* -- Contact page ----------------------------------------------------------*/
+.nx-contact-grid{ display:grid; grid-template-columns:1.3fr 1fr; gap:24px; align-items:start; }
+.nx-contact-details .nx-foot-contact-row{ color:var(--nx-ink); }
+.nx-contact-details .nx-foot-contact-row a{ color:var(--nx-ink); }
+.nx-contact-details .nx-foot-contact-row a:hover{ color:var(--nx-pink); }
+.nx-contact-details .nx-foot-contact-row a.is-strong{ color:var(--nx-ink); }
+.nx-contact-socials{ display:flex; gap:10px; margin-top:16px; }
+.nx-contact-socials a{ display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:var(--nx-cream-2); color:var(--nx-ink-soft); }
+.nx-contact-socials a:hover{ color:var(--nx-pink); }
+
 /* WordPress core wraps accessibility-only text (the_posts_pagination()'s
    "Posts navigation" heading, skip links, etc.) in this class expecting
    every theme to visually hide it — a custom theme built from scratch
@@ -350,9 +369,13 @@ button{ font-family:inherit; }
 .nx-share-btn.is-copied::after{ content:'Copied!'; position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); background:var(--nx-ink); color:#fff; font-size:11px; font-weight:700; padding:4px 9px; border-radius:6px; white-space:nowrap; pointer-events:none; }
 
 /* -- Table of contents (auto-generated from the post's own h2/h3s) -------*/
-.nx-post-toc{ background:var(--nx-cream-2); border-radius:18px; padding:20px 24px; margin:0 0 30px; }
-.nx-post-toc-title{ font-family:var(--nx-font-display); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.6px; color:#9A4A2E; margin-bottom:10px; }
-.nx-post-toc ol{ list-style:none; margin:0; padding:0; counter-reset:toc; }
+.nx-post-toc{ background:var(--nx-cream-2); border-radius:18px; padding:16px 24px; margin:0 0 30px; }
+.nx-post-toc[open]{ padding-bottom:20px; }
+.nx-post-toc-title{ display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; font-family:var(--nx-font-display); font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:0.6px; color:#9A4A2E; list-style:none; padding:4px 0; }
+.nx-post-toc-title::-webkit-details-marker{ display:none; }
+.nx-post-toc-title::after{ content:'▾'; font-size:11px; transition:transform 0.15s ease; }
+.nx-post-toc[open] .nx-post-toc-title::after{ transform:rotate(180deg); }
+.nx-post-toc ol{ list-style:none; margin:10px 0 0; padding:0; counter-reset:toc; }
 .nx-post-toc-item{ margin-bottom:7px; }
 .nx-post-toc-item:not(.nx-post-toc-item--h3){ counter-increment:toc; }
 .nx-post-toc-item:last-child{ margin-bottom:0; }
@@ -671,7 +694,7 @@ button{ font-family:inherit; }
 .nx-result-page p{ color:var(--nx-ink-soft); font-size:15px; line-height:1.6; margin:0 0 24px; }
 
 @media (max-width:700px){
-  .nx-account-grid{ grid-template-columns:1fr; }
+  .nx-account-grid, .nx-contact-grid{ grid-template-columns:1fr; }
   /* 64vw is comfortable on desktop but would squeeze these down to a
      couple hundred px on a phone — let them use the full width instead,
      same as the 2vw/6vw side padding already does at this breakpoint. */

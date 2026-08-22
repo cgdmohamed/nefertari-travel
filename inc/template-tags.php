@@ -210,6 +210,56 @@ function nefertari_render_ajax_pagination( int $max_pages, int $current ): void 
 	echo '</nav>';
 }
 
+/**
+ * Renders a breadcrumb trail — a visual nav plus a matching JSON-LD
+ * BreadcrumbList (Google reads this for the breadcrumb rich-result
+ * regardless of whether the visual nav is styled/visible). "Home" is
+ * prepended automatically; pass the rest in order, with the current
+ * page's `url` left null (Google's own examples omit `item` for it).
+ *
+ * @param array $items [ ['label' => string, 'url' => string|null], ... ]
+ */
+function nefertari_render_breadcrumbs( array $items ): void {
+	$trail = array_merge(
+		array( array( 'label' => __( 'Home', 'nefertari-travel' ), 'url' => home_url( '/' ) ) ),
+		$items
+	);
+	$last_index = count( $trail ) - 1;
+
+	echo '<nav class="nx-breadcrumbs" aria-label="Breadcrumb"><ol>';
+	foreach ( $trail as $i => $item ) {
+		echo '<li>';
+		if ( $i !== $last_index && ! empty( $item['url'] ) ) {
+			printf( '<a href="%1$s">%2$s</a>', esc_url( $item['url'] ), esc_html( $item['label'] ) );
+		} else {
+			printf( '<span aria-current="page">%1$s</span>', esc_html( $item['label'] ) );
+		}
+		if ( $i !== $last_index ) {
+			echo '<span class="nx-breadcrumbs-sep">/</span>';
+		}
+		echo '</li>';
+	}
+	echo '</ol></nav>';
+
+	$schema_items = array();
+	foreach ( $trail as $i => $item ) {
+		$entry = array(
+			'@type'    => 'ListItem',
+			'position' => $i + 1,
+			'name'     => $item['label'],
+		);
+		if ( ! empty( $item['url'] ) ) {
+			$entry['item'] = $item['url'];
+		}
+		$schema_items[] = $entry;
+	}
+	echo '<script type="application/ld+json">' . wp_json_encode( array(
+		'@context'        => 'https://schema.org',
+		'@type'           => 'BreadcrumbList',
+		'itemListElement' => $schema_items,
+	) ) . '</script>';
+}
+
 function nefertari_excursion_highlights( $post_id ) {
 	return nefertari_excursion_list_field( $post_id, '_nefertari_highlights' );
 }

@@ -57,7 +57,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<a href="<?php echo esc_url( home_url( '/#why' ) ); ?>">Why us</a>
 				<a href="<?php echo esc_url( home_url( '/#reviews' ) ); ?>">Reviews</a>
 				<a href="<?php echo esc_url( get_permalink( get_option( 'page_for_posts' ) ) ?: home_url( '/blog/' ) ); ?>">Blog</a>
-				<a href="<?php echo esc_url( home_url( '/#contact' ) ); ?>">Contact</a>
+				<a href="<?php echo esc_url( nefertari_page_url( 'contact' ) ); ?>">Contact</a>
 				<?php if ( is_user_logged_in() ) : ?>
 					<a href="<?php echo esc_url( nefertari_account_url( 'account' ) ); ?>">My Account</a>
 				<?php else : ?>

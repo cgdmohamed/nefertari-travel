@@ -52,6 +52,7 @@ function nefertari_seed_account_pages() {
 		'register'        => 'Create Account',
 		'account'         => 'My Account',
 		'payment-result'  => 'Payment Result',
+		'contact'         => 'Contact Us',
 	);
 	$created = false;
 	foreach ( $pages as $slug => $title ) {
@@ -78,15 +79,16 @@ add_action( 'after_switch_theme', 'nefertari_seed_account_pages' );
 /**
  * Self-heals sites where the theme was already active before this feature
  * existed — `after_switch_theme` never fires again for them, so without
- * this the account pages would simply never get created. Runs the (cheap,
- * idempotent) seed check once per site via an option flag, not on every
- * request.
+ * this the account pages would simply never get created. Runs on every
+ * wp-admin request rather than once behind a flag: nefertari_seed_account_pages()
+ * already skips any page that exists, so this is just a handful of cheap
+ * lookups, and it means a page slug added to that list later (e.g. Contact)
+ * gets created automatically on an already-deployed site too, instead of
+ * needing yet another one-time flag bumped by hand.
  */
 function nefertari_maybe_seed_account_pages() {
-	if ( ! get_option( 'nefertari_account_pages_seeded' ) ) {
-		nefertari_seed_account_pages();
-		update_option( 'nefertari_account_pages_seeded', '1' );
-	}
+	nefertari_seed_account_pages();
+
 	// Separate one-time flag: sites that already ran the block above before
 	// the flush_rewrite_rules() call existed never got it, which can leave
 	// their account pages 404ing even though the pages themselves exist.
@@ -112,6 +114,11 @@ function nefertari_booking_is_cancellable( $status ) {
 function nefertari_account_url( $which ) {
 	$page = get_page_by_path( $which );
 	return $page ? get_permalink( $page ) : home_url( '/' );
+}
+
+/** Same lookup as nefertari_account_url(), just named for non-account pages seeded the same way (e.g. Contact). */
+function nefertari_page_url( $which ) {
+	return nefertari_account_url( $which );
 }
 
 /* -------------------------------------------------------------------------

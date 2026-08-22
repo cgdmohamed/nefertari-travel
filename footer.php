@@ -55,7 +55,7 @@ $wa_generic = nefertari_whatsapp_link( "Hi " . get_bloginfo( 'name' ) . ", I'd l
 					<a href="<?php echo esc_url( home_url( '/#reviews' ) ); ?>">Reviews</a>
 					<a href="<?php echo esc_url( $blog_url ); ?>">Blog &amp; guides</a>
 					<a href="<?php echo esc_url( home_url( '/#excursions' ) ); ?>">All excursions</a>
-					<a href="<?php echo esc_url( $wa_generic ); ?>" target="_blank" rel="noopener">Contact us</a>
+					<a href="<?php echo esc_url( nefertari_page_url( 'contact' ) ); ?>">Contact us</a>
 					<a href="<?php echo esc_url( $wa_generic ); ?>" target="_blank" rel="noopener">FAQ &amp; help</a>
 				</div>
 			</div>

@@ -18,6 +18,12 @@ while ( have_posts() ) :
 	$grad        = nefertari_avatar_gradient( $post_id );
 	?>
 	<article class="nx-post">
+		<?php
+		nefertari_render_breadcrumbs( array(
+			array( 'label' => 'Blog', 'url' => $blog_url ),
+			array( 'label' => get_the_title( $post_id ), 'url' => null ),
+		) );
+		?>
 		<a href="<?php echo esc_url( $blog_url ); ?>" class="nx-back-link">← All articles</a>
 
 		<span class="nx-post-category"><?php echo esc_html( nefertari_post_category_label( $post_id ) ); ?></span>
@@ -47,14 +53,14 @@ while ( have_posts() ) :
 		list( $post_content, $toc ) = nefertari_post_toc( apply_filters( 'the_content', get_the_content() ) );
 		?>
 		<?php if ( count( $toc ) >= 2 ) : ?>
-			<nav class="nx-post-toc" aria-label="Table of contents">
-				<div class="nx-post-toc-title">On this page</div>
+			<details class="nx-post-toc" aria-label="Table of contents">
+				<summary class="nx-post-toc-title">On this page</summary>
 				<ol>
 					<?php foreach ( $toc as $item ) : ?>
 						<li class="nx-post-toc-item nx-post-toc-item--h<?php echo (int) $item['level']; ?>"><a href="#<?php echo esc_attr( $item['id'] ); ?>"><?php echo esc_html( $item['text'] ); ?></a></li>
 					<?php endforeach; ?>
 				</ol>
-			</nav>
+			</details>
 		<?php endif; ?>
 
 		<div class="nx-post-body">

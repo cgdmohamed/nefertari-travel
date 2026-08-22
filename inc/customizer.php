@@ -174,6 +174,20 @@ function nefertari_customize_register( $wp_customize ) {
 	);
 	nefertari_add_text_settings( $wp_customize, 'nefertari_cta', $cta_fields );
 
+	/* Contact page --------------------------------------------------------*/
+	$wp_customize->add_section( 'nefertari_contact_page', array(
+		'title'       => __( 'Contact Page', 'nefertari-travel' ),
+		'panel'       => 'nefertari_settings',
+		'description' => __( 'The "Contact" page uses your existing Address/Phone/Email/Hours settings above. Paste a Fluent Forms shortcode (e.g. [fluentform id="1"]) below once you\'ve built the form — the page shows a WhatsApp/phone fallback until then.', 'nefertari-travel' ),
+	) );
+
+	$contact_page_fields = array(
+		'contact_heading'       => array( __( 'Heading', 'nefertari-travel' ), 'text', "Let's talk about your trip" ),
+		'contact_subheading'    => array( __( 'Subheading', 'nefertari-travel' ), 'textarea', "Questions about an excursion, a group booking, or something else — reach us however's easiest." ),
+		'contact_form_shortcode' => array( __( 'Fluent Forms shortcode', 'nefertari-travel' ), 'text', '' ),
+	);
+	nefertari_add_text_settings( $wp_customize, 'nefertari_contact_page', $contact_page_fields );
+
 	/* Footer ------------------------------------------------------------------*/
 	$wp_customize->add_section( 'nefertari_footer', array(
 		'title' => __( 'Footer', 'nefertari-travel' ),
