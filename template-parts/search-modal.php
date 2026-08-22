@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<div class="nx-modal-box nx-search-box">
 		<div class="nx-search-field">
 			<?php echo nefertari_icon( 'search', 'var(--nx-ink-soft)', 18 ); ?>
-			<input type="text" id="nx-search-input" placeholder="Search excursions and articles…" autocomplete="off">
+			<input type="text" id="nx-search-input" placeholder="Search trips &amp; articles…" autocomplete="off">
 			<button type="button" class="nx-modal-close" data-search-close aria-label="Close">✕</button>
 		</div>
 		<div class="nx-search-results" id="nx-search-results">

@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $excursions = new WP_Query( array(
 	'post_type'      => 'excursion',
-	'posts_per_page' => -1,
+	'posts_per_page' => 8,
 	'orderby'        => 'menu_order title',
 	'order'          => 'ASC',
 	'no_found_rows'  => true,
@@ -27,5 +27,8 @@ $excursions = new WP_Query( array(
 		<?php while ( $excursions->have_posts() ) : $excursions->the_post(); ?>
 			<?php get_template_part( 'template-parts/home/excursion-card' ); ?>
 		<?php endwhile; wp_reset_postdata(); ?>
+	</div>
+	<div class="nx-section-more">
+		<a href="<?php echo esc_url( get_post_type_archive_link( 'excursion' ) ); ?>" class="nx-btn nx-btn--outline">View all excursions →</a>
 	</div>
 </section>
