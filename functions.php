@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'NEFERTARI_VERSION', '1.11.7' );
+define( 'NEFERTARI_VERSION', '1.12.0' );
 define( 'NEFERTARI_DIR', get_template_directory() );
 define( 'NEFERTARI_URI', get_template_directory_uri() );
 
@@ -20,3 +20,4 @@ require NEFERTARI_DIR . '/inc/customizer.php';
 require NEFERTARI_DIR . '/inc/seed-content.php';
 require NEFERTARI_DIR . '/inc/accounts.php';
 require NEFERTARI_DIR . '/inc/social-login.php';
+require NEFERTARI_DIR . '/inc/ajax.php';

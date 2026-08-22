@@ -64,6 +64,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<a href="<?php echo esc_url( nefertari_account_url( 'login' ) ); ?>">Log in</a>
 				<?php endif; ?>
 			</nav>
+			<button type="button" class="nx-icon-btn" id="nx-search-trigger" aria-label="Search"><?php echo nefertari_icon( 'search', 'currentColor', 18 ); ?></button>
 			<?php nefertari_book_button( 'Book now', 'nx-btn nx-btn--primary nx-btn--sm' ); ?>
 		</div>
 	</header>
+
+	<?php get_template_part( 'template-parts/search-modal' ); ?>

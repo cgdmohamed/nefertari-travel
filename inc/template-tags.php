@@ -128,6 +128,88 @@ function nefertari_excursion_category_label( $post_id ) {
 	return '';
 }
 
+/**
+ * Builds WP_Query args for the excursion archive filter — shared by the
+ * initial server-rendered page load ($_GET) and the AJAX re-query
+ * ($_POST) so the two can never drift out of sync with each other.
+ * $filters values are expected already sanitized by the caller.
+ */
+function nefertari_excursion_query_args( array $filters ): array {
+	$args = array(
+		'post_type'      => 'excursion',
+		'post_status'    => 'publish',
+		'posts_per_page' => 9,
+		'paged'          => max( 1, (int) ( $filters['paged'] ?? 1 ) ),
+	);
+
+	$tax_query = array();
+	if ( ! empty( $filters['category'] ) ) {
+		$tax_query[] = array( 'taxonomy' => 'excursion_category', 'field' => 'slug', 'terms' => $filters['category'] );
+	}
+	if ( ! empty( $filters['destination'] ) ) {
+		$tax_query[] = array( 'taxonomy' => 'destination', 'field' => 'slug', 'terms' => $filters['destination'] );
+	}
+	if ( $tax_query ) {
+		$args['tax_query'] = $tax_query;
+	}
+
+	$min_price = ( isset( $filters['min_price'] ) && is_numeric( $filters['min_price'] ) ) ? (float) $filters['min_price'] : null;
+	$max_price = ( isset( $filters['max_price'] ) && is_numeric( $filters['max_price'] ) ) ? (float) $filters['max_price'] : null;
+	if ( null !== $min_price || null !== $max_price ) {
+		$price_query = array( 'key' => '_nefertari_adult_price_usd', 'type' => 'NUMERIC' );
+		if ( null !== $min_price && null !== $max_price ) {
+			$price_query['value']   = array( $min_price, $max_price );
+			$price_query['compare'] = 'BETWEEN';
+		} elseif ( null !== $min_price ) {
+			$price_query['value']   = $min_price;
+			$price_query['compare'] = '>=';
+		} else {
+			$price_query['value']   = $max_price;
+			$price_query['compare'] = '<=';
+		}
+		$args['meta_query'] = array( $price_query );
+	}
+
+	if ( 'price_asc' === ( $filters['sort'] ?? '' ) || 'price_desc' === ( $filters['sort'] ?? '' ) ) {
+		$args['meta_key'] = '_nefertari_adult_price_usd';
+		$args['orderby']  = 'meta_value_num';
+		$args['order']    = 'price_desc' === $filters['sort'] ? 'DESC' : 'ASC';
+	} else {
+		$args['orderby'] = array( 'menu_order' => 'ASC', 'date' => 'DESC' );
+	}
+
+	return $args;
+}
+
+/**
+ * Simple numbered pagination shared by the excursion archive (AJAX) — no
+ * ellipsis truncation since a boutique operator's excursion count is small
+ * enough that it's never needed in practice.
+ */
+function nefertari_render_ajax_pagination( int $max_pages, int $current ): void {
+	if ( $max_pages < 2 ) {
+		return;
+	}
+	// "pagination" alongside "nx-pagination" so this shares its CSS with
+	// the_posts_pagination()'s native <nav class="navigation pagination">
+	// output on the blog archive — one set of pagination styles for both.
+	echo '<nav class="nx-pagination pagination" aria-label="Pagination">';
+	if ( $current > 1 ) {
+		printf( '<a href="#" class="page-numbers prev" data-page="%d">‹ Prev</a>', $current - 1 );
+	}
+	for ( $i = 1; $i <= $max_pages; $i++ ) {
+		if ( $i === $current ) {
+			printf( '<span class="page-numbers current">%d</span>', $i );
+		} else {
+			printf( '<a href="#" class="page-numbers" data-page="%d">%d</a>', $i, $i );
+		}
+	}
+	if ( $current < $max_pages ) {
+		printf( '<a href="#" class="page-numbers next" data-page="%d">Next ›</a>', $current + 1 );
+	}
+	echo '</nav>';
+}
+
 function nefertari_excursion_highlights( $post_id ) {
 	return nefertari_excursion_list_field( $post_id, '_nefertari_highlights' );
 }
@@ -229,6 +311,7 @@ function nefertari_icon( $name, $stroke = 'currentColor', $size = 16 ) {
 		'facebook'     => '<path d="M14 9h2.5V6H14c-2 0-3.5 1.5-3.5 3.5V11H8.5v3h2v6h3v-6H16l.5-3h-3V9.7c0-.4.3-.7.7-.7z"></path>',
 		'instagram'    => '<rect x="4" y="4" width="16" height="16" rx="5"></rect><circle cx="12" cy="12" r="3.6"></circle><circle cx="17" cy="7" r="1" fill="currentColor" stroke="none"></circle>',
 		'x-twitter'    => '<path d="M17.5 3h3l-6.6 7.6L21.6 21h-5.9l-4.3-5.6L6.3 21H3.3l7-8.1L2.7 3h6l3.9 5.1L17.5 3z"></path>',
+		'search'       => '<circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path>',
 	);
 
 	if ( ! isset( $paths[ $name ] ) ) {

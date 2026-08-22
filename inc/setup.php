@@ -48,6 +48,19 @@ function nefertari_enqueue_assets() {
 
 	wp_enqueue_script( 'nefertari-main', NEFERTARI_URI . '/assets/js/main.js', array(), NEFERTARI_VERSION, true );
 
+	wp_enqueue_script( 'nefertari-search', NEFERTARI_URI . '/assets/js/search.js', array(), NEFERTARI_VERSION, true );
+	wp_localize_script( 'nefertari-search', 'nefertariSearch', array(
+		'restUrl' => esc_url_raw( rest_url() ),
+	) );
+
+	if ( is_post_type_archive( 'excursion' ) ) {
+		wp_enqueue_script( 'nefertari-excursion-filter', NEFERTARI_URI . '/assets/js/excursion-filter.js', array(), NEFERTARI_VERSION, true );
+		wp_localize_script( 'nefertari-excursion-filter', 'nefertariExcursionFilter', array(
+			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+			'nonce'   => wp_create_nonce( 'nefertari_filter_excursions' ),
+		) );
+	}
+
 	if ( nefertari_booking_plugin_active() ) {
 		// Unique handle: the plugin registers its own legacy widget script under
 		// the handle "nefertari-booking" for its [nefertari_booking_widget]
