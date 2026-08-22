@@ -33,6 +33,10 @@ $redirect_to = isset( $_GET['redirect_to'] ) ? esc_url_raw( wp_unslash( $_GET['r
 			<?php wp_nonce_field( 'nefertari_register', 'nefertari_register_nonce' ); ?>
 			<input type="hidden" name="nefertari_register" value="1">
 			<input type="hidden" name="redirect_to" value="<?php echo esc_url( $redirect_to ); ?>">
+			<div style="position:absolute;left:-9999px;top:-9999px" aria-hidden="true">
+				<label for="nx-website">Leave this field empty</label>
+				<input type="text" id="nx-website" name="nx_website" tabindex="-1" autocomplete="off">
+			</div>
 
 			<label class="nx-field-label" for="name">Full name</label>
 			<input type="text" id="name" name="name" class="nx-input" required autofocus>

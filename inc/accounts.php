@@ -85,8 +85,53 @@ function nefertari_account_url( $which ) {
 }
 
 /* -------------------------------------------------------------------------
+ * Rate limiting — shared by login lockout and registration throttling.
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Best-effort client IP. This site sits behind Cloudflare, so REMOTE_ADDR
+ * alone would just be Cloudflare's edge IP for every visitor.
+ */
+function nefertari_client_ip() {
+	$ip = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
+	return preg_match( '/^[0-9a-fA-F:.]+$/', $ip ) ? $ip : '0.0.0.0';
+}
+
+/** How many hits have been recorded for $key in the current window. */
+function nefertari_rl_count( $key ) {
+	$data = get_transient( 'nefertari_rl_' . md5( $key ) );
+	return is_array( $data ) ? (int) $data['count'] : 0;
+}
+
+/** Records one hit for $key, starting a fresh $window_seconds window if the previous one lapsed. */
+function nefertari_rl_hit( $key, $window_seconds ) {
+	$transient_key = 'nefertari_rl_' . md5( $key );
+	$data = get_transient( $transient_key );
+	$now  = time();
+	if ( ! is_array( $data ) || ( $now - $data['start'] ) > $window_seconds ) {
+		set_transient( $transient_key, array( 'start' => $now, 'count' => 1 ), $window_seconds );
+		return;
+	}
+	set_transient( $transient_key, array( 'start' => $data['start'], 'count' => $data['count'] + 1 ), $window_seconds - ( $now - $data['start'] ) );
+}
+
+/* -------------------------------------------------------------------------
  * Login
  * ---------------------------------------------------------------------- */
+
+/**
+ * Failed-attempt lockout, independent of whatever security plugin (if any)
+ * is active — wp_signon() still fires this native hook either way, so this
+ * works regardless of which form calls it. Counts only failures, not
+ * successful logins, so a legitimate user logging in often never trips it.
+ */
+function nefertari_login_lockout_key( $ip, $username ) {
+	return 'login_fail_' . $ip . '_' . strtolower( $username );
+}
+
+add_action( 'wp_login_failed', function ( $username ) {
+	nefertari_rl_hit( nefertari_login_lockout_key( nefertari_client_ip(), $username ), 15 * MINUTE_IN_SECONDS );
+} );
 
 function nefertari_handle_login_submit() {
 	if ( ! is_page( 'login' ) || ! isset( $_POST['nefertari_login'] ) ) {
@@ -106,6 +151,12 @@ function nefertari_handle_login_submit() {
 
 	if ( '' === $creds['user_login'] || '' === $creds['user_password'] ) {
 		wp_safe_redirect( add_query_arg( 'error', 'empty_fields', nefertari_account_url( 'login' ) ) );
+		exit;
+	}
+
+	$lockout_key = nefertari_login_lockout_key( nefertari_client_ip(), $creds['user_login'] );
+	if ( nefertari_rl_count( $lockout_key ) >= 8 ) {
+		wp_safe_redirect( add_query_arg( 'error', 'rate_limited', nefertari_account_url( 'login' ) ) );
 		exit;
 	}
 
@@ -133,6 +184,7 @@ function nefertari_login_error_message( $code ) {
 		'google_profile_failed' => "Couldn't get your Google profile — please try again.",
 		'facebook_token_failed' => "Couldn't connect to Facebook — please try again.",
 		'facebook_profile_failed' => "Couldn't get your Facebook profile — please try again.",
+		'rate_limited'          => 'Too many attempts — please wait a few minutes and try again.',
 	);
 	return $messages[ $code ] ?? 'Something went wrong — please try again.';
 }
@@ -153,6 +205,19 @@ function nefertari_handle_register_submit() {
 		wp_safe_redirect( add_query_arg( 'error', 'registration_closed', nefertari_account_url( 'register' ) ) );
 		exit;
 	}
+	// Honeypot: a field hidden off-screen that no real visitor fills in, but
+	// bots that auto-fill every input on a form do. Fail silently as if the
+	// account had actually been created, rather than pointing bots at the
+	// exact reason their submission was rejected.
+	if ( '' !== trim( (string) ( $_POST['nx_website'] ?? '' ) ) ) {
+		wp_safe_redirect( nefertari_account_url( 'login' ) );
+		exit;
+	}
+	if ( nefertari_rl_count( 'register_' . nefertari_client_ip() ) >= 5 ) {
+		wp_safe_redirect( add_query_arg( 'error', 'rate_limited', nefertari_account_url( 'register' ) ) );
+		exit;
+	}
+	nefertari_rl_hit( 'register_' . nefertari_client_ip(), 15 * MINUTE_IN_SECONDS );
 
 	$name      = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) );
 	$email     = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
@@ -221,6 +286,7 @@ function nefertari_register_error_message( $code ) {
 		'registration_failed' => 'Something went wrong creating your account. Please try again.',
 		'registration_closed' => 'New account registration is currently closed.',
 		'invalid_request'     => 'Your session expired — please try again.',
+		'rate_limited'        => 'Too many attempts — please wait a few minutes and try again.',
 	);
 	return $messages[ $code ] ?? '';
 }
@@ -439,6 +505,7 @@ function nefertari_handle_review_images( int $review_id ) {
 
 	$allowed_types  = array( 'image/jpeg', 'image/png', 'image/webp' );
 	$max_images     = 6;
+	$max_bytes      = 5 * MB_IN_BYTES;
 	$attachment_ids = array();
 	$file_count     = count( $_FILES['review_images']['name'] );
 
@@ -447,6 +514,9 @@ function nefertari_handle_review_images( int $review_id ) {
 			continue;
 		}
 		if ( ! in_array( $_FILES['review_images']['type'][ $i ], $allowed_types, true ) ) {
+			continue;
+		}
+		if ( $_FILES['review_images']['size'][ $i ] > $max_bytes ) {
 			continue;
 		}
 		$_FILES['nefertari_review_image'] = array(
