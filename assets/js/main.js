@@ -321,3 +321,46 @@
 		} );
 	} );
 } )();
+
+/**
+ * "Copy link" share button (blog post / excursion detail) — clipboard API
+ * with a manual-select fallback for browsers/contexts where it's unavailable.
+ */
+( function () {
+	'use strict';
+
+	var buttons = document.querySelectorAll( '[data-copy-link]' );
+	if ( ! buttons.length ) {
+		return;
+	}
+
+	Array.prototype.forEach.call( buttons, function ( btn ) {
+		btn.addEventListener( 'click', function () {
+			var url = btn.getAttribute( 'data-copy-link' );
+
+			function showCopied() {
+				btn.classList.add( 'is-copied' );
+				window.setTimeout( function () { btn.classList.remove( 'is-copied' ); }, 1600 );
+			}
+
+			if ( navigator.clipboard && navigator.clipboard.writeText ) {
+				navigator.clipboard.writeText( url ).then( showCopied );
+				return;
+			}
+
+			var input = document.createElement( 'input' );
+			input.value = url;
+			input.style.position = 'fixed';
+			input.style.opacity = '0';
+			document.body.appendChild( input );
+			input.select();
+			try {
+				document.execCommand( 'copy' );
+				showCopied();
+			} catch ( e ) {
+				// Clipboard unavailable — link is still visible/selectable in the input above briefly.
+			}
+			document.body.removeChild( input );
+		} );
+	} );
+} )();

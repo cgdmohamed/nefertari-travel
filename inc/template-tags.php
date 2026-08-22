@@ -288,6 +288,67 @@ function nefertari_post_category_label( $post_id ) {
 	return '';
 }
 
+/**
+ * Auto-generates a table of contents from a post's h2/h3 headings — walks
+ * the already-filtered content HTML with DOMDocument (not regex; too
+ * fragile against real editor markup), stamps a unique id onto each
+ * heading it finds, and returns both the (now-anchorable) content and the
+ * flat list of { level, text, id } used to render the TOC itself.
+ *
+ * @param string $html Fully filtered post content (apply_filters('the_content', ...)).
+ * @return array{0: string, 1: array} [ $html_with_anchors, $toc_items ]
+ */
+function nefertari_post_toc( string $html ): array {
+	if ( ! class_exists( 'DOMDocument' ) ) {
+		return array( $html, array() );
+	}
+	if ( '' === trim( $html ) || ( false === stripos( $html, '<h2' ) && false === stripos( $html, '<h3' ) ) ) {
+		return array( $html, array() );
+	}
+
+	$dom = new DOMDocument();
+	libxml_use_internal_errors( true );
+	// The XML encoding declaration is a standard workaround for DOMDocument
+	// otherwise mangling multi-byte UTF-8 characters when fed HTML directly.
+	$dom->loadHTML( '<?xml encoding="utf-8" ?><div id="nefertari-toc-root">' . $html . '</div>', LIBXML_NOERROR | LIBXML_NOWARNING );
+	libxml_clear_errors();
+
+	$xpath    = new DOMXPath( $dom );
+	$headings = $xpath->query( '//h2 | //h3' );
+	if ( 0 === $headings->length ) {
+		return array( $html, array() );
+	}
+
+	$toc      = array();
+	$used_ids = array();
+	foreach ( $headings as $heading ) {
+		$text = trim( $heading->textContent );
+		if ( '' === $text ) {
+			continue;
+		}
+		$id = sanitize_title( $text ) ?: 'section';
+		$suffix = 2;
+		while ( in_array( $id, $used_ids, true ) ) {
+			$id = sanitize_title( $text ) . '-' . $suffix++;
+		}
+		$used_ids[] = $id;
+		$heading->setAttribute( 'id', $id );
+		$toc[] = array(
+			'level' => 'h3' === strtolower( $heading->nodeName ) ? 3 : 2,
+			'text'  => $text,
+			'id'    => $id,
+		);
+	}
+
+	$root = $xpath->query( '//div[@id="nefertari-toc-root"]' )->item( 0 );
+	$out  = '';
+	foreach ( $root->childNodes as $child ) {
+		$out .= $dom->saveHTML( $child );
+	}
+
+	return array( $out, $toc );
+}
+
 /* -------------------------------------------------------------------------
  * Inline icons — small line-art SVGs used throughout the theme, kept as
  * static markup (no user input) so no escaping is required at output.
@@ -312,6 +373,7 @@ function nefertari_icon( $name, $stroke = 'currentColor', $size = 16 ) {
 		'instagram'    => '<rect x="4" y="4" width="16" height="16" rx="5"></rect><circle cx="12" cy="12" r="3.6"></circle><circle cx="17" cy="7" r="1" fill="currentColor" stroke="none"></circle>',
 		'x-twitter'    => '<path d="M17.5 3h3l-6.6 7.6L21.6 21h-5.9l-4.3-5.6L6.3 21H3.3l7-8.1L2.7 3h6l3.9 5.1L17.5 3z"></path>',
 		'search'       => '<circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path>',
+		'link'         => '<path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1 1"></path><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1-1"></path>',
 	);
 
 	if ( ! isset( $paths[ $name ] ) ) {

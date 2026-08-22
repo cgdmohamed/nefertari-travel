@@ -33,6 +33,8 @@ while ( have_posts() ) :
 			<span class="nx-post-meta-read"><?php echo nefertari_icon( 'clock', '#B07A55', 14 ); ?> <?php echo esc_html( nefertari_reading_time( get_the_content() ) ); ?> read</span>
 		</div>
 
+		<?php get_template_part( 'template-parts/share-buttons', null, array( 'url' => get_permalink( $post_id ), 'title' => get_the_title( $post_id ) ) ); ?>
+
 		<div class="nx-post-cover" style="background:<?php echo esc_attr( $grad ); ?>">
 			<img src="<?php echo esc_url( nefertari_image_url( $post_id, 'large' ) ); ?>" alt="<?php the_title_attribute(); ?>">
 		</div>
@@ -41,8 +43,22 @@ while ( have_posts() ) :
 			<p class="nx-post-excerpt"><?php echo esc_html( get_the_excerpt() ); ?></p>
 		<?php endif; ?>
 
+		<?php
+		list( $post_content, $toc ) = nefertari_post_toc( apply_filters( 'the_content', get_the_content() ) );
+		?>
+		<?php if ( count( $toc ) >= 2 ) : ?>
+			<nav class="nx-post-toc" aria-label="Table of contents">
+				<div class="nx-post-toc-title">On this page</div>
+				<ol>
+					<?php foreach ( $toc as $item ) : ?>
+						<li class="nx-post-toc-item nx-post-toc-item--h<?php echo (int) $item['level']; ?>"><a href="#<?php echo esc_attr( $item['id'] ); ?>"><?php echo esc_html( $item['text'] ); ?></a></li>
+					<?php endforeach; ?>
+				</ol>
+			</nav>
+		<?php endif; ?>
+
 		<div class="nx-post-body">
-			<?php the_content(); ?>
+			<?php echo $post_content; // phpcs:ignore WordPress.Security.EscapeOutput -- the_content()'s own filtered output, round-tripped through DOMDocument only to stamp heading ids; nothing added is unescaped user input. ?>
 		</div>
 
 		<div class="nx-post-cta">

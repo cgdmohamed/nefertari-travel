@@ -36,6 +36,9 @@ while ( have_posts() ) :
 					<span class="nx-detail-fact"><?php echo nefertari_icon( 'book', '#B07A55', 15 ); ?> English guide</span>
 					<span class="nx-detail-fact"><?php echo nefertari_icon( 'shield-check', '#1F8A5B', 15 ); ?> Free cancellation</span>
 				</div>
+
+				<?php get_template_part( 'template-parts/share-buttons', null, array( 'url' => get_permalink( $excursion_id ), 'title' => get_the_title( $excursion_id ) ) ); ?>
+
 				<p class="nx-detail-desc"><?php the_content(); ?></p>
 
 				<?php get_template_part( 'template-parts/excursion/highlights' ); ?>
