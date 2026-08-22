@@ -305,8 +305,85 @@ button{ font-family:inherit; }
 .nx-post-cover{ border-radius:24px; overflow:hidden; box-shadow:0 22px 46px rgba(43,26,31,0.16); margin-bottom:34px; }
 .nx-post-cover img{ display:block; width:100%; height:380px; object-fit:cover; }
 .nx-post-excerpt{ font-size:20px; line-height:1.55; color:#4A3833; font-weight:500; margin:0 0 30px; }
-.nx-post-body h2{ font-family:var(--nx-font-display); font-weight:700; font-size:25px; letter-spacing:-0.5px; margin:30px 0 12px; }
-.nx-post-body p{ font-size:17.5px; line-height:1.72; color:#4A3833; margin:0 0 18px; }
+/* -- Blog post body typography — styles whatever the block/classic editor
+   outputs from the_content(), so it needs to cover the full common set:
+   headings, links, emphasis, lists, quotes, code, tables, images/captions,
+   WP alignment classes, embeds, and a couple of WP-specific extras
+   (drop cap, highlight mark). -------------------------------------------- */
+.nx-post-body{ font-size:17.5px; line-height:1.72; color:#4A3833; }
+.nx-post-body > *:first-child{ margin-top:0; }
+.nx-post-body > *:last-child{ margin-bottom:0; }
+
+.nx-post-body p{ margin:0 0 22px; }
+
+.nx-post-body h1,
+.nx-post-body h2,
+.nx-post-body h3,
+.nx-post-body h4,
+.nx-post-body h5,
+.nx-post-body h6{ font-family:var(--nx-font-display); font-weight:800; color:var(--nx-ink); letter-spacing:-0.5px; line-height:1.2; }
+.nx-post-body h1{ font-size:clamp(28px,3.6vw,38px); margin:46px 0 18px; }
+.nx-post-body h2{ font-size:clamp(23px,2.8vw,28px); margin:44px 0 16px; }
+.nx-post-body h3{ font-size:21px; margin:36px 0 14px; }
+.nx-post-body h4{ font-size:18.5px; margin:30px 0 12px; }
+.nx-post-body h5,
+.nx-post-body h6{ font-size:16px; text-transform:uppercase; letter-spacing:0.6px; margin:26px 0 10px; }
+
+.nx-post-body a{ color:var(--nx-pink); text-decoration:underline; text-decoration-color:rgba(217,58,124,0.35); text-underline-offset:2px; font-weight:600; transition:text-decoration-color 0.15s ease; }
+.nx-post-body a:hover{ text-decoration-color:var(--nx-pink); }
+
+.nx-post-body strong,
+.nx-post-body b{ font-weight:700; color:var(--nx-ink); }
+.nx-post-body em,
+.nx-post-body i{ font-style:italic; }
+.nx-post-body mark{ background:rgba(251,186,106,0.4); color:var(--nx-ink); padding:0.05em 0.3em; border-radius:4px; }
+.nx-post-body small{ font-size:0.85em; color:var(--nx-ink-soft); }
+
+.nx-post-body ul,
+.nx-post-body ol{ margin:0 0 22px; padding-left:1.3em; }
+.nx-post-body li{ margin-bottom:9px; }
+.nx-post-body li > ul,
+.nx-post-body li > ol{ margin:9px 0 0; }
+.nx-post-body ul > li::marker{ color:var(--nx-pink); }
+.nx-post-body ol > li::marker{ color:var(--nx-pink); font-weight:700; }
+
+.nx-post-body blockquote{ margin:30px 0; padding:20px 26px; border-left:4px solid var(--nx-pink); background:var(--nx-cream-2); border-radius:0 16px 16px 0; font-family:var(--nx-font-display); font-weight:600; font-size:19px; line-height:1.5; letter-spacing:-0.2px; color:var(--nx-ink); }
+.nx-post-body blockquote p{ margin:0 0 8px; }
+.nx-post-body blockquote p:last-child{ margin-bottom:0; }
+.nx-post-body blockquote cite{ display:block; margin-top:10px; font-family:var(--nx-font-body); font-weight:600; font-size:13.5px; font-style:normal; color:var(--nx-ink-soft); }
+
+.nx-post-body code{ font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace; font-size:0.87em; background:var(--nx-cream-2); color:#9A4A2E; padding:0.15em 0.4em; border-radius:5px; }
+.nx-post-body pre{ margin:26px 0; padding:20px 22px; background:var(--nx-ink); color:var(--nx-cream); border-radius:16px; overflow-x:auto; font-size:14.5px; line-height:1.6; }
+.nx-post-body pre code{ background:none; color:inherit; padding:0; font-size:1em; }
+
+.nx-post-body hr{ border:none; border-top:1px solid var(--nx-border); margin:40px 0; }
+
+.nx-post-body table{ width:100%; border-collapse:collapse; margin:26px 0; font-size:15.5px; }
+.nx-post-body th,
+.nx-post-body td{ padding:11px 14px; border:1px solid var(--nx-border); text-align:left; }
+.nx-post-body th{ background:var(--nx-cream-2); font-family:var(--nx-font-display); font-weight:700; color:var(--nx-ink); }
+.nx-post-body tr:nth-child(even) td{ background:rgba(255,246,236,0.5); }
+
+.nx-post-body img{ max-width:100%; height:auto; border-radius:18px; display:block; }
+.nx-post-body figure{ margin:30px 0; }
+.nx-post-body figcaption,
+.nx-post-body .wp-caption-text{ margin-top:10px; font-size:13.5px; line-height:1.5; color:var(--nx-ink-soft); text-align:center; }
+.nx-post-body .wp-caption{ max-width:100%; }
+.nx-post-body .wp-caption img{ margin-bottom:0; }
+
+.nx-post-body .alignleft{ float:left; margin:6px 26px 16px 0; max-width:46%; }
+.nx-post-body .alignright{ float:right; margin:6px 0 16px 26px; max-width:46%; }
+.nx-post-body .aligncenter{ display:block; margin-left:auto; margin-right:auto; }
+.nx-post-body .alignwide{ width:calc(100% + 2 * min(120px, 8vw)); max-width:none; margin-left:min(-120px, -8vw); margin-right:min(-120px, -8vw); }
+.nx-post-body .alignfull{ width:100vw; max-width:100vw; margin-left:calc(50% - 50vw); margin-right:calc(50% - 50vw); border-radius:0; }
+.nx-post-body .alignwide img,
+.nx-post-body .alignfull img{ border-radius:18px; width:100%; }
+.nx-post-body .alignfull img{ border-radius:0; }
+
+.nx-post-body .wp-block-embed__wrapper{ position:relative; margin:26px 0; padding-top:56.25%; border-radius:16px; overflow:hidden; background:var(--nx-ink); }
+.nx-post-body .wp-block-embed__wrapper iframe{ position:absolute; inset:0; width:100%; height:100%; border:none; }
+
+.nx-post-body .has-drop-cap:not(:focus)::first-letter{ float:left; font-family:var(--nx-font-display); font-weight:800; font-size:4.4em; line-height:0.82; margin:0.05em 0.08em 0 0; color:var(--nx-pink); }
 .nx-post-cta{ margin-top:40px; border-radius:24px; padding:34px; background:var(--nx-gradient-brand); color:#fff; text-align:center; box-shadow:0 18px 40px rgba(217,58,124,0.26); }
 .nx-post-cta h3{ font-family:var(--nx-font-display); font-weight:800; font-size:26px; letter-spacing:-0.5px; margin:0 0 10px; }
 .nx-post-cta p{ font-size:15.5px; opacity:0.95; max-width:420px; margin:0 auto 20px; }
