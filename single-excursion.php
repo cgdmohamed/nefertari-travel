@@ -20,7 +20,7 @@ while ( have_posts() ) :
 		<a href="<?php echo esc_url( home_url( '/#excursions' ) ); ?>" class="nx-back-link">← All excursions</a>
 
 		<div class="nx-detail">
-			<div>
+			<div class="nx-detail-main">
 				<?php get_template_part( 'template-parts/excursion/gallery' ); ?>
 
 				<h1 class="nx-detail-title"><?php the_title(); ?></h1>

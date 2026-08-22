@@ -30,9 +30,24 @@ $has_multiple = count( $all_images ) > 1;
 	<?php endif; ?>
 </div>
 <?php if ( $has_multiple ) : ?>
+	<?php
+	// Capped, not endlessly scrollable: past a point, more thumbnails just
+	// makes the strip a wall of tiny images. The last visible one gets a
+	// "+N" badge for the rest instead — clicking it opens the lightbox
+	// right there, where its own prev/next reaches every remaining photo.
+	$max_thumbs = 7;
+	$total      = count( $all_images );
+	$show_count = min( $max_thumbs, $total );
+	$hidden     = $total - $show_count;
+	?>
 	<div class="nx-thumbs">
-		<?php foreach ( $all_images as $i => $url ) : ?>
-			<img src="<?php echo esc_url( $url ); ?>" alt="" class="nx-thumb<?php echo 0 === $i ? ' is-active' : ''; ?>" data-slide-index="<?php echo (int) $i; ?>">
+		<?php foreach ( array_slice( $all_images, 0, $show_count ) as $i => $url ) : ?>
+			<span class="nx-thumb-item">
+				<img src="<?php echo esc_url( $url ); ?>" alt="" class="nx-thumb<?php echo 0 === $i ? ' is-active' : ''; ?>">
+				<?php if ( $hidden > 0 && $i === $show_count - 1 ) : ?>
+					<span class="nx-thumb-more">+<?php echo (int) $hidden; ?></span>
+				<?php endif; ?>
+			</span>
 		<?php endforeach; ?>
 	</div>
 <?php endif; ?>
