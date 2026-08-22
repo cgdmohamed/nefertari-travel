@@ -148,13 +148,23 @@ $reviewable       = $plugin_active ? nefertari_reviewable_excursions( $current_u
 	$phone    = get_user_meta( $current_user->ID, 'nefertari_phone', true );
 	$updated  = isset( $_GET['updated'] );
 	$bookings = $plugin_active ? ( new \Nefertari\Booking\Services\Booking_Service() )->for_customer( $current_user->ID ) : array();
+	// Deep-linkable via ?tab=, defaults to Bookings — except right after a
+	// profile save, where the success message needs the Profile tab active.
+	$active_tab = isset( $_GET['tab'] ) && in_array( $_GET['tab'], array( 'profile', 'bookings' ), true )
+		? sanitize_key( wp_unslash( $_GET['tab'] ) )
+		: ( $updated ? 'profile' : 'bookings' );
 	?>
 	<div class="nx-account-head">
 		<h1>My Account</h1>
 		<a href="<?php echo esc_url( wp_logout_url( home_url( '/' ) ) ); ?>" class="nx-btn nx-btn--outline nx-btn--sm">Log out</a>
 	</div>
 
-	<div class="nx-account-grid">
+	<div class="nx-account-tabs">
+		<button type="button" class="nx-account-tab<?php echo 'profile' === $active_tab ? ' is-active' : ''; ?>" data-tab="profile">Profile</button>
+		<button type="button" class="nx-account-tab<?php echo 'bookings' === $active_tab ? ' is-active' : ''; ?>" data-tab="bookings">My Bookings</button>
+	</div>
+
+	<div class="nx-account-tab-panel<?php echo 'profile' === $active_tab ? ' is-active' : ''; ?>" data-tab-panel="profile">
 		<div class="nx-panel">
 			<h2>Profile</h2>
 			<?php if ( $updated ) : ?>
@@ -176,7 +186,9 @@ $reviewable       = $plugin_active ? nefertari_reviewable_excursions( $current_u
 				<button type="submit" class="nx-btn nx-btn--primary nx-btn--block">Save changes</button>
 			</form>
 		</div>
+	</div>
 
+	<div class="nx-account-tab-panel<?php echo 'bookings' === $active_tab ? ' is-active' : ''; ?>" data-tab-panel="bookings">
 		<div class="nx-panel">
 			<h2>My bookings</h2>
 			<?php if ( ! $plugin_active ) : ?>

@@ -289,3 +289,35 @@
 		openModal( excursionId, reviewable[ excursionId ] || '' );
 	}
 } )();
+
+/**
+ * My Account page tabs (Profile / My Bookings) — both panels render
+ * server-side, this just toggles which one shows, and mirrors the active
+ * tab into the URL (?tab=) so a refresh or shared link keeps it.
+ */
+( function () {
+	'use strict';
+
+	var tabs = document.querySelectorAll( '.nx-account-tab' );
+	var panels = document.querySelectorAll( '.nx-account-tab-panel' );
+	if ( ! tabs.length || ! panels.length ) {
+		return;
+	}
+
+	Array.prototype.forEach.call( tabs, function ( tab ) {
+		tab.addEventListener( 'click', function () {
+			var target = tab.getAttribute( 'data-tab' );
+			Array.prototype.forEach.call( tabs, function ( t ) {
+				t.classList.toggle( 'is-active', t === tab );
+			} );
+			Array.prototype.forEach.call( panels, function ( panel ) {
+				panel.classList.toggle( 'is-active', panel.getAttribute( 'data-tab-panel' ) === target );
+			} );
+			if ( window.history.replaceState ) {
+				var url = new URL( window.location.href );
+				url.searchParams.set( 'tab', target );
+				window.history.replaceState( null, '', url );
+			}
+		} );
+	} );
+} )();

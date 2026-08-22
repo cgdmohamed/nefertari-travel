@@ -604,6 +604,17 @@ button{ font-family:inherit; }
 .nx-account-grid{ display:grid; grid-template-columns:1fr 1.4fr; gap:24px; align-items:start; }
 .nx-panel h2{ font-family:var(--nx-font-display); font-weight:700; font-size:18px; margin:0 0 18px; }
 
+/* Account listing view (Profile / My Bookings) — one panel at a time
+   instead of the old side-by-side two-box grid. */
+.nx-account-tabs{ display:flex; gap:6px; margin-bottom:22px; border-bottom:1px solid var(--nx-border); }
+.nx-account-tab{ padding:12px 20px; border:none; background:none; cursor:pointer; font-family:var(--nx-font-body); font-weight:700; font-size:15px; color:var(--nx-ink-soft); border-bottom:3px solid transparent; margin-bottom:-1px; transition:color 0.15s ease, border-color 0.15s ease; }
+.nx-account-tab:hover{ color:var(--nx-ink); }
+.nx-account-tab.is-active{ color:var(--nx-pink); border-bottom-color:var(--nx-pink); }
+.nx-account-tab-panel{ display:none; }
+.nx-account-tab-panel.is-active{ display:block; }
+.nx-account-tab-panel .nx-panel{ max-width:640px; }
+.nx-account-tab-panel[data-tab-panel="bookings"] .nx-panel{ max-width:none; }
+
 /* Wraps every .nx-bookings-table so a narrow panel scrolls the table
    horizontally instead of squeezing its columns/badges/buttons into an
    unreadable mess. */
