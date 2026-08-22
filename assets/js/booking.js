@@ -156,7 +156,11 @@
 
 	/* Passenger forms -----------------------------------------------------------*/
 
-	var PASSENGER_REQUIRED_FIELDS = [ 'first_name', 'last_name', 'nationality', 'date_of_birth', 'passport_number' ];
+	/* Per-traveler details (passport, DOB, nationality) are optional at booking
+	 * time — a guest can send them later, including over WhatsApp. Only the
+	 * single contact/invoicing form on the next step is required, so nothing
+	 * here gates progression; passengerHasData() just drives the "Added ✓"
+	 * status pill on each traveler's collapsed row. */
 
 	function passengerGroup( type, index ) {
 		var label = ( 'adult' === type ? 'Adult ' : 'Child ' ) + ( index + 1 );
@@ -166,7 +170,7 @@
 		wrap.innerHTML =
 			'<button type="button" class="nx-passenger-summary" data-toggle-passenger>' +
 			'<span class="nx-passenger-summary-title">' + label + '</span>' +
-			'<span class="nx-passenger-summary-status" data-passenger-status>Tap to fill in</span>' +
+			'<span class="nx-passenger-summary-status" data-passenger-status>Optional — tap to add</span>' +
 			'<span class="nx-passenger-chevron">›</span>' +
 			'</button>' +
 			'<div class="nx-passenger-fields">' +
@@ -183,23 +187,19 @@
 		return wrap;
 	}
 
-	function passengerComplete( group ) {
-		var data = {};
-		group.querySelectorAll( '[data-field]' ).forEach( function ( input ) {
-			data[ input.getAttribute( 'data-field' ) ] = input.value;
-		} );
-		return PASSENGER_REQUIRED_FIELDS.every( function ( field ) {
-			return data[ field ] && '' !== data[ field ].trim();
+	function passengerHasData( group ) {
+		return Array.prototype.some.call( group.querySelectorAll( '[data-field]' ), function ( input ) {
+			return '' !== input.value.trim();
 		} );
 	}
 
 	function updatePassengerStatuses() {
 		els.passengerForms.querySelectorAll( '.nx-passenger-group' ).forEach( function ( group ) {
-			var complete = passengerComplete( group );
-			group.classList.toggle( 'is-complete', complete );
-			group.querySelector( '[data-passenger-status]' ).textContent = complete ? 'Complete ✓' : 'Tap to fill in';
+			var hasData = passengerHasData( group );
+			group.classList.toggle( 'is-complete', hasData );
+			group.querySelector( '[data-passenger-status]' ).textContent = hasData ? 'Added ✓' : 'Optional — tap to add';
 		} );
-		els.travelersNext.disabled = ! passengersComplete();
+		els.travelersNext.disabled = false;
 	}
 
 	els.passengerForms.addEventListener( 'click', function ( e ) {
@@ -258,14 +258,6 @@
 			passengers.push( passenger );
 		} );
 		return passengers;
-	}
-
-	function passengersComplete() {
-		return collectPassengers().every( function ( passenger ) {
-			return PASSENGER_REQUIRED_FIELDS.every( function ( field ) {
-				return passenger[ field ] && '' !== passenger[ field ].trim();
-			} );
-		} );
 	}
 
 	/* Counters --------------------------------------------------------------*/
@@ -537,7 +529,6 @@
 		var valid = !! els.tripSelect.value &&
 			!! els.slotSelect.value &&
 			!! state.lastPrice &&
-			passengersComplete() &&
 			els.contactName.value.trim() !== '' &&
 			els.contactPhone.value.trim() !== '' &&
 			els.contactCountry.value.trim() !== '' &&

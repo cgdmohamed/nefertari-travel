@@ -114,14 +114,15 @@ $is_logged_in = is_user_logged_in();
 				<!-- SUB-STEP: travelers -->
 				<div class="nx-sub-step" data-sub-step="travelers">
 					<button type="button" class="nx-modal-back" data-prev-step>← Back</button>
-					<p class="nx-substep-hint">Passport details for each traveler — needed for your booking confirmation and check-in.</p>
+					<p class="nx-substep-hint">Optional — add passport details for each traveler now, or send them to us on WhatsApp before your trip. We only need your contact info on the next step to confirm the booking.</p>
 					<div id="nx-passenger-forms"></div>
-					<button type="button" class="nx-btn nx-btn--primary nx-btn--block" id="nx-travelers-next" data-next-step disabled>Continue</button>
+					<button type="button" class="nx-btn nx-btn--primary nx-btn--block" id="nx-travelers-next" data-next-step>Continue</button>
 				</div>
 
 				<!-- SUB-STEP: contact & pay -->
 				<div class="nx-sub-step" data-sub-step="contact">
 					<button type="button" class="nx-modal-back" data-prev-step>← Back</button>
+					<p class="nx-substep-hint">Just your details for the booking and invoice — hotel/room and special requests are optional.</p>
 
 					<label class="nx-field-label" for="nx-contact-name">Full name</label>
 					<input type="text" id="nx-contact-name" class="nx-input" placeholder="e.g. Sarah Müller">
