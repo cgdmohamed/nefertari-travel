@@ -12,6 +12,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Customers have no reason to be in wp-admin — the `nefertari_customer`
+ * role only carries the bare `read` capability WordPress gives every
+ * logged-in user, so it can't be used to gate this. Bounced to the
+ * homepage instead of seeing (or erroring against) an admin UI that has
+ * nothing for them. admin-ajax.php must stay reachable regardless — every
+ * logged-in AJAX call on the front end (including this theme's own,
+ * e.g. the excursion filter) goes through wp-admin/admin-ajax.php.
+ */
+function nefertari_restrict_wp_admin() {
+	if ( wp_doing_ajax() ) {
+		return;
+	}
+	if ( current_user_can( 'manage_options' ) || current_user_can( 'view_nefertari_bookings' ) ) {
+		return;
+	}
+	wp_safe_redirect( home_url( '/' ) );
+	exit;
+}
+add_action( 'admin_init', 'nefertari_restrict_wp_admin' );
+
+/** Same audience as above: no wp-admin links/toolbar for customers on the front end. */
+function nefertari_hide_admin_bar_for_customers( $show ) {
+	if ( is_user_logged_in() && ! current_user_can( 'manage_options' ) && ! current_user_can( 'view_nefertari_bookings' ) ) {
+		return false;
+	}
+	return $show;
+}
+add_filter( 'show_admin_bar', 'nefertari_hide_admin_bar_for_customers' );
+
 /* -------------------------------------------------------------------------
  * Page seeding — page-{slug}.php templates need a real Page with that slug.
  * ---------------------------------------------------------------------- */
@@ -351,7 +381,13 @@ function nefertari_handle_retry_payment() {
 
 	$checkout_url = $session['checkout_url'] ?? '';
 	if ( $checkout_url ) {
-		wp_safe_redirect( $checkout_url );
+		// wp_safe_redirect() only allows same-site targets and nothing here
+		// registers allowed_redirect_hosts, so it would silently substitute
+		// the homepage for Kashier's/PayPal's actual (external) checkout URL —
+		// the button would just bounce back home with no error. This URL is
+		// built by our own Kashier_Service/PayPal_Service, not user input, so
+		// an unrestricted redirect is safe here.
+		wp_redirect( $checkout_url ); // phpcs:ignore -- external payment gateway URL, not a local one.
 		exit;
 	}
 

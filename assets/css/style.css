@@ -277,6 +277,11 @@ button{ font-family:inherit; }
 .nx-cta h2{ font-family:var(--nx-font-display); font-weight:800; font-size:clamp(30px,3.6vw,46px); letter-spacing:-1px; margin:0 0 14px; }
 .nx-cta p{ font-size:18px; opacity:0.95; max-width:520px; margin:0 auto 28px; }
 .nx-cta .nx-btn--dark:hover{ background:#fff; color:var(--nx-pink); }
+.nx-404-actions{ display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
+.nx-404-actions .nx-btn{ display:inline-flex; align-items:center; gap:8px; }
+.nx-404-links{ display:flex; align-items:center; justify-content:center; gap:8px 22px; flex-wrap:wrap; font-size:14.5px; font-weight:600; }
+.nx-404-links a{ color:#fff; opacity:0.9; text-decoration:underline; text-underline-offset:3px; }
+.nx-404-links a:hover{ opacity:1; }
 
 /* =========================================================================
    Blog index / post hero
