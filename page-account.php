@@ -22,6 +22,7 @@ $current_user     = wp_get_current_user();
 $plugin_active    = nefertari_booking_plugin_active();
 $view_booking_id  = isset( $_GET['booking'] ) ? absint( $_GET['booking'] ) : 0;
 $booking          = ( $plugin_active && $view_booking_id ) ? ( new \Nefertari\Booking\Services\Booking_Service() )->for_customer_detail( $view_booking_id, $current_user->ID ) : null;
+$reviewable       = $plugin_active ? nefertari_reviewable_excursions( $current_user->ID ) : array();
 ?>
 <div class="nx-account-page">
 
@@ -32,7 +33,12 @@ $booking          = ( $plugin_active && $view_booking_id ) ? ( new \Nefertari\Bo
 			<a href="<?php echo esc_url( nefertari_account_url( 'account' ) ); ?>" class="nx-back-link">← Back to My Account</a>
 			<h1><?php echo esc_html( get_the_title( (int) $booking['excursion_id'] ) ); ?></h1>
 		</div>
-		<span class="nx-status-pill nx-status-pill--<?php echo esc_attr( nefertari_booking_status_tone( $booking['status'] ) ); ?>"><?php echo esc_html( nefertari_booking_status_label( $booking['status'] ) ); ?></span>
+		<div style="display:flex;align-items:center;gap:10px">
+			<?php if ( isset( $reviewable[ (int) $booking['excursion_id'] ] ) ) : ?>
+				<button type="button" class="nx-btn nx-btn--outline nx-btn--sm" data-review-trigger data-review-excursion="<?php echo esc_attr( $booking['excursion_id'] ); ?>" data-review-title="<?php echo esc_attr( $reviewable[ (int) $booking['excursion_id'] ] ); ?>">★ Leave a review</button>
+			<?php endif; ?>
+			<span class="nx-status-pill nx-status-pill--<?php echo esc_attr( nefertari_booking_status_tone( $booking['status'] ) ); ?>"><?php echo esc_html( nefertari_booking_status_label( $booking['status'] ) ); ?></span>
+		</div>
 	</div>
 
 	<?php if ( isset( $_GET['retry_error'] ) ) : ?>
@@ -199,6 +205,8 @@ $booking          = ( $plugin_active && $view_booking_id ) ? ( new \Nefertari\Bo
 											<input type="hidden" name="payment_method" value="kashier">
 											<button type="submit" class="nx-btn nx-btn--primary nx-btn--sm">Retry payment</button>
 										</form>
+								<?php elseif ( isset( $reviewable[ (int) $row['excursion_id'] ] ) ) : ?>
+									<button type="button" class="nx-btn nx-btn--primary nx-btn--sm" data-review-trigger data-review-excursion="<?php echo esc_attr( $row['excursion_id'] ); ?>" data-review-title="<?php echo esc_attr( $reviewable[ (int) $row['excursion_id'] ] ); ?>">★ Review</button>
 									<?php endif; ?>
 								</td>
 							</tr>
@@ -208,44 +216,52 @@ $booking          = ( $plugin_active && $view_booking_id ) ? ( new \Nefertari\Bo
 			<?php endif; ?>
 		</div>
 
-		<?php $reviewable = nefertari_reviewable_excursions( $current_user->ID ); ?>
-		<?php if ( ! empty( $reviewable ) ) : ?>
-			<div class="nx-panel" style="margin-top:24px">
-				<h2>Leave a review</h2>
-				<?php if ( isset( $_GET['review_submitted'] ) ) : ?>
-					<div class="nx-form-success">Thanks! Your review is in — it'll appear on the site once we've had a quick look.</div>
-				<?php elseif ( isset( $_GET['review_error'] ) ) : ?>
-					<div class="nx-form-error"><?php echo esc_html( nefertari_review_error_message( sanitize_key( wp_unslash( $_GET['review_error'] ) ) ) ); ?></div>
-				<?php endif; ?>
-				<form method="post">
-					<?php wp_nonce_field( 'nefertari_submit_review', 'nefertari_review_nonce' ); ?>
-					<input type="hidden" name="nefertari_submit_review" value="1">
-
-					<label class="nx-field-label" for="review-excursion">Which excursion?</label>
-					<select id="review-excursion" name="excursion_id" class="nx-input" required>
-						<?php foreach ( $reviewable as $excursion_id => $title ) : ?>
-							<option value="<?php echo esc_attr( $excursion_id ); ?>"><?php echo esc_html( $title ); ?></option>
-						<?php endforeach; ?>
-					</select>
-
-					<label class="nx-field-label">Your rating</label>
-					<div class="nx-rating-input">
-						<?php for ( $i = 5; $i >= 1; $i-- ) : ?>
-							<input type="radio" id="review-rating-<?php echo $i; ?>" name="rating" value="<?php echo $i; ?>"<?php checked( 5, $i ); ?>>
-							<label for="review-rating-<?php echo $i; ?>">★</label>
-						<?php endfor; ?>
-					</div>
-
-					<label class="nx-field-label" for="review-text">Your review</label>
-					<textarea id="review-text" name="review_text" class="nx-input" rows="3" required placeholder="Tell other travellers about your trip…"></textarea>
-
-					<button type="submit" class="nx-btn nx-btn--primary">Submit review</button>
-				</form>
-			</div>
-		<?php endif; ?>
 	</div>
 
 <?php endif; ?>
+
+<div class="nx-modal" id="nx-review-modal" data-reviewable="<?php echo esc_attr( wp_json_encode( $reviewable ) ); ?>">
+	<button type="button" class="nx-modal-backdrop" data-review-close aria-label="Close"></button>
+	<div class="nx-modal-box">
+		<div class="nx-modal-head">
+			<div>
+				<div class="nx-modal-eyebrow">Share your trip</div>
+				<div class="nx-modal-title" id="nx-review-modal-excursion">Leave a review</div>
+			</div>
+			<button type="button" class="nx-modal-close" data-review-close aria-label="Close">✕</button>
+		</div>
+		<div class="nx-modal-body">
+			<?php if ( isset( $_GET['review_submitted'] ) ) : ?>
+				<div class="nx-form-success">Thanks! Your review is in — it'll appear on the site once we've had a quick look.</div>
+			<?php elseif ( isset( $_GET['review_error'] ) ) : ?>
+				<div class="nx-form-error"><?php echo esc_html( nefertari_review_error_message( sanitize_key( wp_unslash( $_GET['review_error'] ) ) ) ); ?></div>
+			<?php endif; ?>
+
+			<form method="post" enctype="multipart/form-data">
+				<?php wp_nonce_field( 'nefertari_submit_review', 'nefertari_review_nonce' ); ?>
+				<input type="hidden" name="nefertari_submit_review" value="1">
+				<input type="hidden" name="excursion_id" id="nx-review-excursion-id" value="">
+
+				<label class="nx-field-label">Your rating</label>
+				<div class="nx-rating-input">
+					<?php for ( $i = 5; $i >= 1; $i-- ) : ?>
+						<input type="radio" id="review-rating-<?php echo $i; ?>" name="rating" value="<?php echo $i; ?>"<?php checked( 5, $i ); ?>>
+						<label for="review-rating-<?php echo $i; ?>">★</label>
+					<?php endfor; ?>
+				</div>
+
+				<label class="nx-field-label" for="review-text">Your review</label>
+				<textarea id="review-text" name="review_text" class="nx-input" rows="3" required placeholder="Tell other travellers about your trip…"></textarea>
+
+				<label class="nx-field-label" for="review-images">Add photos (optional, up to 6)</label>
+				<input type="file" id="review-images" name="review_images[]" accept="image/jpeg,image/png,image/webp" multiple>
+				<div class="nx-review-upload-preview" id="nx-review-upload-preview"></div>
+
+				<button type="submit" class="nx-btn nx-btn--primary nx-btn--block">Submit review</button>
+			</form>
+		</div>
+	</div>
+</div>
 
 </div>
 <?php

@@ -217,3 +217,75 @@
 	goTo( 0 );
 	startAutoplay();
 } )();
+
+/**
+ * Review modal on the account page — one shared dialog triggered by any
+ * "Review" button (booking list rows, booking detail header), scoped to
+ * whichever excursion the trigger's data attributes name. Reopens itself
+ * on page load if the server redirected back with a review_error (the
+ * excursion id survives that redirect as a query arg).
+ */
+( function () {
+	'use strict';
+
+	var modal = document.getElementById( 'nx-review-modal' );
+	if ( ! modal ) {
+		return;
+	}
+
+	var titleEl = document.getElementById( 'nx-review-modal-excursion' );
+	var idInput = document.getElementById( 'nx-review-excursion-id' );
+	var fileInput = document.getElementById( 'review-images' );
+	var preview = document.getElementById( 'nx-review-upload-preview' );
+	var reviewable = {};
+	try {
+		reviewable = JSON.parse( modal.getAttribute( 'data-reviewable' ) || '{}' );
+	} catch ( e ) {
+		reviewable = {};
+	}
+
+	function openModal( excursionId, excursionTitle ) {
+		idInput.value = excursionId;
+		titleEl.textContent = excursionTitle || 'Leave a review';
+		modal.classList.add( 'is-open' );
+		document.body.style.overflow = 'hidden';
+	}
+
+	function closeModal() {
+		modal.classList.remove( 'is-open' );
+		document.body.style.overflow = '';
+	}
+
+	Array.prototype.forEach.call( document.querySelectorAll( '[data-review-trigger]' ), function ( btn ) {
+		btn.addEventListener( 'click', function () {
+			openModal( btn.getAttribute( 'data-review-excursion' ), btn.getAttribute( 'data-review-title' ) );
+		} );
+	} );
+
+	Array.prototype.forEach.call( modal.querySelectorAll( '[data-review-close]' ), function ( el ) {
+		el.addEventListener( 'click', closeModal );
+	} );
+
+	document.addEventListener( 'keydown', function ( e ) {
+		if ( 'Escape' === e.key && modal.classList.contains( 'is-open' ) ) {
+			closeModal();
+		}
+	} );
+
+	if ( fileInput && preview ) {
+		fileInput.addEventListener( 'change', function () {
+			preview.innerHTML = '';
+			Array.prototype.slice.call( fileInput.files, 0, 6 ).forEach( function ( file ) {
+				var img = document.createElement( 'img' );
+				img.src = URL.createObjectURL( file );
+				preview.appendChild( img );
+			} );
+		} );
+	}
+
+	var params = new URLSearchParams( window.location.search );
+	if ( params.has( 'review_error' ) || params.has( 'review_submitted' ) ) {
+		var excursionId = params.get( 'excursion_id' ) || '';
+		openModal( excursionId, reviewable[ excursionId ] || '' );
+	}
+} )();

@@ -254,6 +254,8 @@ button{ font-family:inherit; }
 .nx-verified{ display:flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:var(--nx-green); background:var(--nx-green-bg); padding:3px 9px; border-radius:999px; }
 .nx-review-text{ font-size:16px; line-height:1.6; color:#4A3833; margin:0; flex:1; }
 .nx-review-card--sm .nx-review-text{ font-size:14.5px; }
+.nx-review-photos{ display:flex; gap:6px; }
+.nx-review-photo{ width:56px; height:56px; border-radius:10px; object-fit:cover; }
 .nx-review-person{ display:flex; align-items:center; gap:12px; border-top:1px solid var(--nx-border); padding-top:16px; }
 .nx-avatar{
   width:42px; height:42px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center;
@@ -531,6 +533,8 @@ button{ font-family:inherit; }
 .nx-modal-close{ cursor:pointer; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.22); border:none; color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; flex:none; }
 .nx-modal-close:hover{ background:rgba(255,255,255,0.38); }
 .nx-modal-body{ padding:24px 26px 26px; overflow-y:auto; }
+.nx-review-upload-preview{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.nx-review-upload-preview img{ width:64px; height:64px; object-fit:cover; border-radius:10px; border:1px solid rgba(43,26,31,0.12); }
 
 .nx-field-label{ display:block; font-weight:700; font-size:13px; margin-bottom:7px; color:#4A3833; }
 .nx-input{

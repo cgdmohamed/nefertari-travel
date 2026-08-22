@@ -341,8 +341,9 @@ add_action( 'template_redirect', 'nefertari_handle_cancellation_request' );
 
 /**
  * Excursions a customer can leave a review for — anything they have a
- * confirmed or completed booking on, deduplicated. Used both to gate the
- * review form's visibility and to validate what's actually submitted.
+ * confirmed or completed booking on, minus excursions they've already
+ * reviewed (pending or published). Used both to gate which bookings show
+ * a "Review" button and to validate what's actually submitted.
  */
 function nefertari_reviewable_excursions( $customer_id ) {
 	if ( ! nefertari_booking_plugin_active() ) {
@@ -354,6 +355,20 @@ function nefertari_reviewable_excursions( $customer_id ) {
 			$excursions[ (int) $booking['excursion_id'] ] = get_the_title( (int) $booking['excursion_id'] );
 		}
 	}
+	if ( empty( $excursions ) ) {
+		return array();
+	}
+	$reviewed = get_posts( array(
+		'post_type'      => 'testimonial',
+		'post_status'    => array( 'pending', 'publish' ),
+		'meta_key'       => '_nx_customer_id',
+		'meta_value'     => $customer_id,
+		'posts_per_page' => -1,
+		'fields'         => 'ids',
+	) );
+	foreach ( $reviewed as $review_id ) {
+		unset( $excursions[ (int) get_post_meta( $review_id, '_nx_excursion_id', true ) ] );
+	}
 	return $excursions;
 }
 
@@ -364,32 +379,33 @@ function nefertari_handle_review_submit() {
 	if ( ! is_user_logged_in() ) {
 		return;
 	}
+	$excursion_id = absint( $_POST['excursion_id'] ?? 0 );
+	$redirect_args = array( 'excursion_id' => $excursion_id );
+
 	if ( ! isset( $_POST['nefertari_review_nonce'] ) || ! wp_verify_nonce( $_POST['nefertari_review_nonce'], 'nefertari_submit_review' ) ) {
-		wp_safe_redirect( add_query_arg( 'review_error', 'invalid_request', nefertari_account_url( 'account' ) ) );
+		wp_safe_redirect( add_query_arg( array_merge( $redirect_args, array( 'review_error' => 'invalid_request' ) ), nefertari_account_url( 'account' ) ) );
 		exit;
 	}
 
 	$current_user = wp_get_current_user();
 	$rating       = max( 1, min( 5, absint( $_POST['rating'] ?? 5 ) ) );
 	$text         = sanitize_textarea_field( wp_unslash( $_POST['review_text'] ?? '' ) );
-	$excursion_id = absint( $_POST['excursion_id'] ?? 0 );
 	$reviewable   = nefertari_reviewable_excursions( $current_user->ID );
 
 	if ( '' === trim( $text ) ) {
-		wp_safe_redirect( add_query_arg( 'review_error', 'empty', nefertari_account_url( 'account' ) ) );
+		wp_safe_redirect( add_query_arg( array_merge( $redirect_args, array( 'review_error' => 'empty' ) ), nefertari_account_url( 'account' ) ) );
 		exit;
 	}
 	if ( ! isset( $reviewable[ $excursion_id ] ) ) {
-		wp_safe_redirect( add_query_arg( 'review_error', 'not_eligible', nefertari_account_url( 'account' ) ) );
+		wp_safe_redirect( add_query_arg( array_merge( $redirect_args, array( 'review_error' => 'not_eligible' ) ), nefertari_account_url( 'account' ) ) );
 		exit;
 	}
 
 	$review_id = wp_insert_post( array(
 		'post_type'    => 'testimonial',
 		// Pending, not publish: goes live only once reviewed in wp-admin
-		// (Testimonials list) — this form has no photo/CAPTCHA/etc. to
-		// screen submissions the way the rest of the site's forms don't
-		// need to, so a moderation step takes that role instead.
+		// (Testimonials list) — uploaded photos are moderated here too,
+		// so a moderation step covers what a CAPTCHA/photo-screen would.
 		'post_status'  => 'pending',
 		'post_title'   => $current_user->display_name,
 		'post_content' => $text,
@@ -398,12 +414,59 @@ function nefertari_handle_review_submit() {
 		update_post_meta( $review_id, '_nx_rating', $rating );
 		update_post_meta( $review_id, '_nx_meta_line', $reviewable[ $excursion_id ] );
 		update_post_meta( $review_id, '_nx_customer_id', $current_user->ID );
+		update_post_meta( $review_id, '_nx_excursion_id', $excursion_id );
+		nefertari_handle_review_images( $review_id );
 	}
 
 	wp_safe_redirect( add_query_arg( 'review_submitted', '1', nefertari_account_url( 'account' ) ) );
 	exit;
 }
 add_action( 'template_redirect', 'nefertari_handle_review_submit' );
+
+/**
+ * Attaches up to 6 uploaded review photos to the testimonial post via
+ * WordPress's own media-upload pipeline (media_handle_upload) — the same
+ * path wp-admin file uploads use, so the real file signature is validated,
+ * not just the client-supplied extension/MIME type.
+ */
+function nefertari_handle_review_images( int $review_id ) {
+	if ( empty( $_FILES['review_images']['name'][0] ) ) {
+		return;
+	}
+	require_once ABSPATH . 'wp-admin/includes/image.php';
+	require_once ABSPATH . 'wp-admin/includes/file.php';
+	require_once ABSPATH . 'wp-admin/includes/media.php';
+
+	$allowed_types  = array( 'image/jpeg', 'image/png', 'image/webp' );
+	$max_images     = 6;
+	$attachment_ids = array();
+	$file_count     = count( $_FILES['review_images']['name'] );
+
+	for ( $i = 0; $i < $file_count && count( $attachment_ids ) < $max_images; $i++ ) {
+		if ( UPLOAD_ERR_OK !== $_FILES['review_images']['error'][ $i ] ) {
+			continue;
+		}
+		if ( ! in_array( $_FILES['review_images']['type'][ $i ], $allowed_types, true ) ) {
+			continue;
+		}
+		$_FILES['nefertari_review_image'] = array(
+			'name'     => $_FILES['review_images']['name'][ $i ],
+			'type'     => $_FILES['review_images']['type'][ $i ],
+			'tmp_name' => $_FILES['review_images']['tmp_name'][ $i ],
+			'error'    => $_FILES['review_images']['error'][ $i ],
+			'size'     => $_FILES['review_images']['size'][ $i ],
+		);
+		$attachment_id = media_handle_upload( 'nefertari_review_image', $review_id, array(), array( 'test_form' => false ) );
+		if ( ! is_wp_error( $attachment_id ) ) {
+			$attachment_ids[] = $attachment_id;
+		}
+	}
+	unset( $_FILES['nefertari_review_image'] );
+
+	if ( ! empty( $attachment_ids ) ) {
+		update_post_meta( $review_id, '_nx_review_images', $attachment_ids );
+	}
+}
 
 function nefertari_review_error_message( $code ) {
 	$messages = array(

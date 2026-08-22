@@ -42,6 +42,19 @@ function nefertari_render_testimonial_metabox( $post ) {
 	<?php nefertari_field_row( __( 'Meta line (country · trip)', 'nefertari-travel' ), '<input type="text" name="nx_meta_line" value="' . esc_attr( $meta_line ) . '" class="widefat" placeholder="e.g. United Kingdom · Cairo & Pyramids">' ); ?>
 	<?php nefertari_field_row( __( 'Rating (1–5)', 'nefertari-travel' ), '<input type="number" min="1" max="5" name="nx_rating" value="' . esc_attr( $rating ) . '" class="small-text">' ); ?>
 	<p class="description"><?php esc_html_e( 'Use the title field for the traveller\'s name and the main editor for the review text.', 'nefertari-travel' ); ?></p>
+	<?php $review_images = get_post_meta( $post->ID, '_nx_review_images', true ); ?>
+	<?php if ( ! empty( $review_images ) ) : ?>
+		<div class="nx-field-row">
+			<label class="nx-field-label"><?php esc_html_e( 'Photos submitted with this review', 'nefertari-travel' ); ?></label>
+			<div style="display:flex;gap:8px;flex-wrap:wrap">
+				<?php foreach ( (array) $review_images as $attachment_id ) : ?>
+					<a href="<?php echo esc_url( wp_get_attachment_url( $attachment_id ) ); ?>" target="_blank" rel="noopener">
+						<?php echo wp_get_attachment_image( $attachment_id, 'thumbnail', false, array( 'style' => 'width:90px;height:90px;object-fit:cover;border-radius:8px' ) ); ?>
+					</a>
+				<?php endforeach; ?>
+			</div>
+		</div>
+	<?php endif; ?>
 	<?php
 }
 
