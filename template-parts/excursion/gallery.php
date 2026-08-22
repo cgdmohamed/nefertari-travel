@@ -36,3 +36,13 @@ $has_multiple = count( $all_images ) > 1;
 		<?php endforeach; ?>
 	</div>
 <?php endif; ?>
+
+<div class="nx-lightbox" id="nx-lightbox">
+	<button type="button" class="nx-lightbox-close" data-lightbox-close aria-label="Close">✕</button>
+	<button type="button" class="nx-lightbox-nav nx-lightbox-nav--prev" data-lightbox-prev aria-label="Previous image">‹</button>
+	<button type="button" class="nx-lightbox-nav nx-lightbox-nav--next" data-lightbox-next aria-label="Next image">›</button>
+	<div class="nx-lightbox-stage">
+		<img id="nx-lightbox-img" src="" alt="">
+	</div>
+	<div class="nx-lightbox-counter" id="nx-lightbox-counter"></div>
+</div>
