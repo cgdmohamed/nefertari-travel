@@ -450,7 +450,8 @@ button{ font-family:inherit; }
 .nx-related-title{ font-family:var(--nx-font-display); font-weight:800; font-size:26px; letter-spacing:-0.5px; margin:50px 0 18px; }
 .nx-related-card{ border-radius:18px; overflow:hidden; background:#fff; box-shadow:0 8px 22px rgba(43,26,31,0.08); text-decoration:none; color:inherit; display:block; }
 .nx-related-card:hover{ transform:translateY(-4px); }
-.nx-related-media{ height:96px; }
+.nx-related-media{ position:relative; height:96px; overflow:hidden; }
+.nx-related-media img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .nx-related-body{ padding:14px 15px 16px; }
 .nx-related-cat{ font-size:11px; font-weight:700; color:var(--nx-pink); letter-spacing:0.4px; text-transform:uppercase; margin-bottom:6px; }
 .nx-related-title-text{ font-family:var(--nx-font-display); font-weight:700; font-size:15.5px; line-height:1.25; letter-spacing:-0.3px; }
