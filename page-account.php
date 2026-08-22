@@ -102,6 +102,7 @@ $reviewable       = $plugin_active ? nefertari_reviewable_excursions( $current_u
 			<?php if ( empty( $booking['passengers'] ) ) : ?>
 				<p class="nx-bookings-empty">No passenger details recorded.</p>
 			<?php else : ?>
+				<div class="nx-table-scroll">
 				<table class="nx-bookings-table">
 					<thead><tr><th>Name</th><th>Type</th><th>Nationality</th><th>Passport</th></tr></thead>
 					<tbody>
@@ -115,12 +116,14 @@ $reviewable       = $plugin_active ? nefertari_reviewable_excursions( $current_u
 						<?php endforeach; ?>
 					</tbody>
 				</table>
+				</div>
 			<?php endif; ?>
 
 			<h2 style="margin-top:26px">Payment history</h2>
 			<?php if ( empty( $booking['payments'] ) ) : ?>
 				<p class="nx-bookings-empty">No payment attempts yet.</p>
 			<?php else : ?>
+				<div class="nx-table-scroll">
 				<table class="nx-bookings-table">
 					<thead><tr><th>Date</th><th>Method</th><th>Amount</th><th>Status</th></tr></thead>
 					<tbody>
@@ -134,6 +137,7 @@ $reviewable       = $plugin_active ? nefertari_reviewable_excursions( $current_u
 						<?php endforeach; ?>
 					</tbody>
 				</table>
+				</div>
 			<?php endif; ?>
 		</div>
 	</div>
@@ -181,6 +185,7 @@ $reviewable       = $plugin_active ? nefertari_reviewable_excursions( $current_u
 				<p class="nx-bookings-empty">You haven't booked an excursion yet.</p>
 				<a href="<?php echo esc_url( home_url( '/#excursions' ) ); ?>" class="nx-btn nx-btn--primary" style="margin-top:14px">Explore excursions →</a>
 			<?php else : ?>
+				<div class="nx-table-scroll">
 				<table class="nx-bookings-table">
 					<thead>
 						<tr><th>Excursion</th><th>Departure</th><th>Guests</th><th>Total</th><th>Status</th><th></th></tr>
@@ -196,10 +201,11 @@ $reviewable       = $plugin_active ? nefertari_reviewable_excursions( $current_u
 								<td><?php echo esc_html( $row['adult_count'] . ' adult(s)' . ( $row['child_count'] > 0 ? ', ' . $row['child_count'] . ' child(ren)' : '' ) ); ?></td>
 								<td>$<?php echo esc_html( number_format( (float) $row['total_usd'], 2 ) ); ?></td>
 								<td><span class="nx-status-pill nx-status-pill--<?php echo esc_attr( nefertari_booking_status_tone( $row['status'] ) ); ?>"><?php echo esc_html( nefertari_booking_status_label( $row['status'] ) ); ?></span></td>
-								<td style="white-space:nowrap">
+								<td>
+									<div class="nx-bookings-actions">
 									<a href="<?php echo esc_url( add_query_arg( 'booking', $row['id'], nefertari_account_url( 'account' ) ) ); ?>" class="nx-btn nx-btn--outline nx-btn--sm">View</a>
 									<?php if ( nefertari_booking_is_retryable( $row['status'] ) ) : ?>
-										<form method="post" style="display:inline">
+										<form method="post">
 											<?php wp_nonce_field( 'nefertari_retry_payment_' . $row['id'], 'nefertari_retry_nonce' ); ?>
 											<input type="hidden" name="nefertari_retry_payment" value="<?php echo esc_attr( $row['id'] ); ?>">
 											<input type="hidden" name="payment_method" value="kashier">
@@ -208,11 +214,13 @@ $reviewable       = $plugin_active ? nefertari_reviewable_excursions( $current_u
 								<?php elseif ( isset( $reviewable[ (int) $row['excursion_id'] ] ) ) : ?>
 									<button type="button" class="nx-btn nx-btn--primary nx-btn--sm" data-review-trigger data-review-excursion="<?php echo esc_attr( $row['excursion_id'] ); ?>" data-review-title="<?php echo esc_attr( $reviewable[ (int) $row['excursion_id'] ] ); ?>">★ Review</button>
 									<?php endif; ?>
+									</div>
 								</td>
 							</tr>
 						<?php endforeach; ?>
 					</tbody>
 				</table>
+				</div>
 			<?php endif; ?>
 		</div>
 

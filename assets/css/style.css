@@ -294,7 +294,7 @@ button{ font-family:inherit; }
 /* =========================================================================
    Single blog post
    ========================================================================= */
-.nx-post{ max-width:760px; margin:0 auto; padding:34px 6vw 70px; }
+.nx-post{ max-width:64vw; margin:0 auto; padding:34px 6vw 70px; }
 .nx-post-category{ display:inline-block; padding:6px 14px; border-radius:999px; background:var(--nx-cream-2); font-weight:700; font-size:12px; letter-spacing:0.5px; text-transform:uppercase; color:#9A4A2E; margin-bottom:18px; }
 .nx-post-title{ font-family:var(--nx-font-display); font-weight:800; font-size:clamp(32px,4.4vw,52px); line-height:1.04; letter-spacing:-1.2px; margin:0 0 20px; }
 .nx-post-meta{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; color:var(--nx-ink-soft); font-size:14px; margin-bottom:30px; }
@@ -567,19 +567,25 @@ button{ font-family:inherit; }
 .nx-oauth-divider{ display:flex; align-items:center; gap:12px; margin-bottom:20px; color:var(--nx-ink-soft); font-size:13px; font-weight:600; }
 .nx-oauth-divider::before, .nx-oauth-divider::after{ content:''; flex:1; height:1px; background:var(--nx-border-2); }
 
-.nx-account-page{ max-width:clamp(420px,64vw,960px); margin:0 auto; padding:50px 2vw 90px; }
+.nx-account-page{ max-width:64vw; margin:0 auto; padding:50px 2vw 90px; }
 .nx-account-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:14px; }
 .nx-account-head h1{ font-family:var(--nx-font-display); font-weight:800; font-size:clamp(26px,3vw,34px); letter-spacing:-0.6px; margin:0; }
 .nx-account-grid{ display:grid; grid-template-columns:1fr 1.4fr; gap:24px; align-items:start; }
 .nx-panel h2{ font-family:var(--nx-font-display); font-weight:700; font-size:18px; margin:0 0 18px; }
 
-.nx-bookings-table{ width:100%; border-collapse:collapse; font-size:14px; }
-.nx-bookings-table th{ text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:0.4px; color:var(--nx-brown); padding:0 0 10px; border-bottom:1px solid var(--nx-border); }
-.nx-bookings-table td{ padding:12px 0; border-bottom:1px solid var(--nx-border); vertical-align:top; }
+/* Wraps every .nx-bookings-table so a narrow panel scrolls the table
+   horizontally instead of squeezing its columns/badges/buttons into an
+   unreadable mess. */
+.nx-table-scroll{ overflow-x:auto; }
+.nx-bookings-table{ width:100%; min-width:520px; border-collapse:collapse; font-size:14px; }
+.nx-bookings-table th{ text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:0.4px; color:var(--nx-brown); padding:0 10px 10px 0; border-bottom:1px solid var(--nx-border); white-space:nowrap; }
+.nx-bookings-table td{ padding:12px 10px 12px 0; border-bottom:1px solid var(--nx-border); vertical-align:top; }
+.nx-bookings-table th:last-child, .nx-bookings-table td:last-child{ padding-right:0; }
 .nx-bookings-table tr:last-child td{ border-bottom:none; }
 .nx-bookings-empty{ color:var(--nx-ink-soft); font-size:14px; }
+.nx-bookings-actions{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; white-space:normal; }
 
-.nx-status-pill{ display:inline-flex; padding:4px 11px; border-radius:999px; font-size:11.5px; font-weight:700; }
+.nx-status-pill{ display:inline-flex; padding:4px 11px; border-radius:999px; font-size:11.5px; font-weight:700; white-space:nowrap; }
 .nx-status-pill--success{ background:var(--nx-green-bg); color:var(--nx-green); }
 .nx-status-pill--warning{ background:var(--nx-cream-2); color:#9A4A2E; }
 .nx-status-pill--danger{ background:var(--nx-red-bg, #FBEAE7); color:#B0413A; }
@@ -595,6 +601,10 @@ button{ font-family:inherit; }
 
 @media (max-width:700px){
   .nx-account-grid{ grid-template-columns:1fr; }
+  /* 64vw is comfortable on desktop but would squeeze these down to a
+     couple hundred px on a phone — let them use the full width instead,
+     same as the 2vw/6vw side padding already does at this breakpoint. */
+  .nx-account-page, .nx-post{ max-width:100%; }
 }
 
 /* =========================================================================
